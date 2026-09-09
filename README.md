@@ -15,7 +15,7 @@ Phase 1 is in progress. The backend currently includes:
 - Validated simulator settings and synthetic normal, degraded, and outage scenarios.
 - JUnit coverage of the model, generator, settings, and Spring application startup.
 
-Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator can be run through the console demo or tests and is not connected to an HTTP endpoint or Spring Boot application startup.
+Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator runs through the console demo, HTTP preview, or tests. It does not start a background producer on application startup.
 
 ## Current stack
 
@@ -82,6 +82,18 @@ java -cp target/classes com.sentinelpay.backend.simulator.PaymentSimulatorDemo -
 `--count` accepts 1–10,000 (default 10), `--interval-ms` accepts 0–1,000 (default 0), `--scenario` accepts NORMAL, DEGRADED, or OUTAGE (case-insensitive), and `--seed` accepts a Java long integer. Use `--help` for usage. In Eclipse, put these options in **Run Configurations → Arguments → Program arguments**.
 
 The interval is a delay between emissions, separate from the event's simulated latency; output and generation time also affect wall-clock spacing. The runner streams events to its output without storing the batch. Press `Ctrl+C` to stop a long console run. Invalid or duplicate options produce an error on stderr and exit code 2 before emitting anything. Java thread interruption is preserved and returns code 130; the operating system may choose its own exit code for Ctrl+C. No-argument runs still print exactly ten event lines.
+
+## HTTP preview
+
+With the backend running on port 8080:
+
+```powershell
+Invoke-RestMethod 'http://localhost:8080/api/simulator/transactions?count=5&scenario=DEGRADED&seed=42' | ConvertTo-Json -Depth 5
+```
+
+`GET /api/simulator/transactions` returns an object with `scenario`, `count`, and an `events` array. Each event contains the six fields listed below. Query parameters are optional: `count` defaults to 10 and is limited to 1–100, `scenario` defaults to NORMAL and is case-insensitive, and `seed` accepts a Java long integer. Unlike the CLI, HTTP preview has no pacing option and immediately generates a bounded batch.
+
+Invalid counts, scenarios, or numeric values return HTTP 400 with an `application/problem+json` body containing `title`, `status`, and a useful `detail`. Successful responses use `Cache-Control: no-store`. Each request has its own generator: identical seeds/settings repeat simulated fields, while IDs and timestamps are fresh. Events are not stored and there is no transaction-history endpoint. This is a development preview with no authentication or rate limiting; production deployment belongs to a later part.
 
 ## Run tests
 
