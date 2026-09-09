@@ -125,6 +125,8 @@ Amounts are generated as integer cents and converted to `BigDecimal` to avoid fl
 
 The constructor accepts a `Random` instance. Using the same seed reproduces the sequence of amounts, statuses, and latencies. UUIDs and timestamps are generated independently and are not reproduced by that seed.
 
+For complete event replay in tests, the four-argument constructor also accepts a `Clock` and `Supplier<String>` for IDs. A fixed clock plus a reset ID sequence and identical random seed/settings reproduce complete events. Normal constructors retain real UTC time and random UUIDs. Create one simulator per run rather than sharing stateful sources between concurrent runs. The domain model validates supplied IDs, but uniqueness remains the ID supplier's responsibility.
+
 ## Five-part delivery plan
 
 | Part | Scope | Status |
