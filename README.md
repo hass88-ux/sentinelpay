@@ -169,7 +169,7 @@ For complete event replay in tests, the four-argument constructor also accepts a
 | Part | Scope | Status |
 | --- | --- | --- |
 | 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | Complete for this checkpoint |
-| 2 | Kafka streaming, metric aggregation, PostgreSQL/TimescaleDB storage (original Phases 2–3) | Planned |
+| 2 | Kafka streaming, metric aggregation, PostgreSQL storage (original Phases 2–3; TimescaleDB extension deferred) | In progress |
 | 3 | Monitoring and anomaly detection (original Phase 4) | Planned |
 | 4 | Predictive incident model and AI-assisted investigation (original Phases 5–6) | Planned |
 | 5 | React UI, expanded observability and testing, Docker, AWS, and demo polish (original Phase 7 plus frontend) | Planned |
@@ -177,6 +177,12 @@ For complete event replay in tests, the four-argument constructor also accepts a
 A React frontend is also planned for a later stage. Tests and documentation are added incrementally as the backend develops.
 
 Each part is delivered as roughly six focused commits with README updates. Part 1 deliberately uses no Kafka, database, AI, authentication, Docker, or frontend dependencies.
+
+### Part 2 implementation
+
+Part 2 adds opt-in Kafka and PostgreSQL integration. The local development path uses [Spring Kafka's embedded broker](https://docs.spring.io/spring-kafka/reference/testing.html) and [Zonky's native embedded PostgreSQL](https://github.com/zonkyio/embedded-postgres), both test-scope dependencies, to run real processes without Docker or a system database installation. They are excluded from the application JAR. The default application remains a standalone preview; infrastructure is only required for the upcoming `pipeline` profile. Local database files belong under ignored `backend/.local/`.
+
+Six checkpoints: infrastructure and configuration; transactional event storage and minute metrics; Kafka publishing and consumption; pipeline HTTP controls and queries; failure/replay integration checks; local launch, end-to-end verification, and documentation. PostgreSQL is the supported storage engine in this part. TimescaleDB-specific hypertables and retention are deferred until the extension can be run and tested; no TimescaleDB compatibility claim is made yet.
 
 ### Part 1 checkpoints
 
