@@ -11,9 +11,10 @@ Phase 1 is in progress. The backend currently includes:
 - Validation of required fields, nonblank IDs, positive amounts, and nonnegative latency.
 - A `TransactionStatus` enum with `SUCCESS` and `FAILED` outcomes.
 - A plain Java `PaymentSimulator` that generates one event per method call.
+- A standalone console demo that prints ten simulated transactions and exits.
 - 11 JUnit tests: six model tests, four simulator tests, and one Spring application context test.
 
-Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator is currently exercised through tests and is not connected to an HTTP endpoint or application startup.
+Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator can be run through the console demo or tests and is not connected to an HTTP endpoint or Spring Boot application startup.
 
 ## Current stack
 
@@ -34,6 +35,7 @@ backend/
       TransactionStatus.java
     simulator/
       PaymentSimulator.java
+      PaymentSimulatorDemo.java
   src/main/resources/
     application.properties
   src/test/java/com/sentinelpay/backend/
@@ -56,6 +58,19 @@ mvn spring-boot:run
 Expect Spring Boot startup logs and an embedded server on port 8080. Stop it with `Ctrl+C`. Starting the backend does not print simulated transactions yet.
 
 The Maven wrapper is included, but its Windows script encountered a `Cannot index into a null array` error in the development environment. The commands documented here use installed Maven, which was used successfully for testing.
+
+## Run the console demo
+
+From `backend/`:
+
+```powershell
+mvn compile
+java -cp target/classes com.sentinelpay.backend.simulator.PaymentSimulatorDemo
+```
+
+Compilation should end with `BUILD SUCCESS`. The demo prints exactly ten `TransactionEvent[...]` lines, each containing an ID, timestamp, amount, currency, status, and simulated latency, then exits and returns to the terminal prompt. Values vary between runs; all ten transactions may have `SUCCESS` status. The simulated latency does not delay printing.
+
+In Eclipse, refresh the backend project, then right-click `PaymentSimulatorDemo.java` in `com.sentinelpay.backend.simulator` and choose **Run As → Java Application**. The ten events appear in the Console view. This demo runs independently of the Spring Boot server.
 
 ## Run tests
 
