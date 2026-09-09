@@ -73,6 +73,16 @@ Compilation should end with `BUILD SUCCESS`. The demo prints exactly ten `Transa
 
 In Eclipse, refresh the backend project, then right-click `PaymentSimulatorDemo.java` in `com.sentinelpay.backend.simulator` and choose **Run As → Java Application**. The ten events appear in the Console view. This demo runs independently of the Spring Boot server.
 
+Choose a finite run with optional arguments:
+
+```powershell
+java -cp target/classes com.sentinelpay.backend.simulator.PaymentSimulatorDemo --count=20 --scenario=DEGRADED --seed=42 --interval-ms=100
+```
+
+`--count` accepts 1–10,000 (default 10), `--interval-ms` accepts 0–1,000 (default 0), `--scenario` accepts NORMAL, DEGRADED, or OUTAGE (case-insensitive), and `--seed` accepts a Java long integer. Use `--help` for usage. In Eclipse, put these options in **Run Configurations → Arguments → Program arguments**.
+
+The interval is a delay between emissions, separate from the event's simulated latency; output and generation time also affect wall-clock spacing. The runner streams events to its output without storing the batch. Press `Ctrl+C` to stop a long console run. Invalid or duplicate options produce an error on stderr and exit code 2 before emitting anything. Java thread interruption is preserved and returns code 130; the operating system may choose its own exit code for Ctrl+C. No-argument runs still print exactly ten event lines.
+
 ## Run tests
 
 From `backend/`:
