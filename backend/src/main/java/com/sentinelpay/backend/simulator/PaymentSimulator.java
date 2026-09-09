@@ -13,24 +13,25 @@ import com.sentinelpay.backend.transaction.TransactionStatus;
 /** Generates individual payment attempts using illustrative demo settings. */
 public class PaymentSimulator {
     private static final Currency USD = Currency.getInstance("USD");
-    private static final int MIN_AMOUNT_CENTS = 1;
-    private static final int MAX_AMOUNT_CENTS = 50_000;
-    private static final int MIN_LATENCY_MS = 10;
-    private static final int MAX_LATENCY_MS = 500;
-    private static final double SUCCESS_PROBABILITY = 0.90;
-
     private final Random random;
+    private final SimulationSettings settings;
 
     public PaymentSimulator(Random random) {
+        this(random, SimulationScenario.NORMAL.settings());
+    }
+
+    public PaymentSimulator(Random random, SimulationSettings settings) {
         this.random = Objects.requireNonNull(random, "random must not be null");
+        this.settings = Objects.requireNonNull(settings, "settings must not be null");
     }
 
     public TransactionEvent generateTransaction() {
-        int amountCents = random.nextInt(MIN_AMOUNT_CENTS, MAX_AMOUNT_CENTS + 1);
+        // Widen before adding one so Integer.MAX_VALUE remains a valid inclusive bound.
+        long amountCents = random.nextLong(settings.minAmountCents(), (long) settings.maxAmountCents() + 1);
         BigDecimal amount = BigDecimal.valueOf(amountCents, 2);
-        TransactionStatus status = random.nextDouble() < SUCCESS_PROBABILITY
+        TransactionStatus status = random.nextDouble() < settings.successProbability()
                 ? TransactionStatus.SUCCESS : TransactionStatus.FAILED;
-        int latencyMs = random.nextInt(MIN_LATENCY_MS, MAX_LATENCY_MS + 1);
+        long latencyMs = random.nextLong(settings.minLatencyMs(), (long) settings.maxLatencyMs() + 1);
 
         return new TransactionEvent(UUID.randomUUID().toString(), Instant.now(),
                 amount, USD, status, latencyMs);

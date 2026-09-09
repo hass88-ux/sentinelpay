@@ -12,7 +12,8 @@ Phase 1 is in progress. The backend currently includes:
 - A `TransactionStatus` enum with `SUCCESS` and `FAILED` outcomes.
 - A plain Java `PaymentSimulator` that generates one event per method call.
 - A standalone console demo that prints ten simulated transactions and exits.
-- 11 JUnit tests: six model tests, four simulator tests, and one Spring application context test.
+- Validated simulator settings and synthetic normal, degraded, and outage scenarios.
+- JUnit coverage of the model, generator, settings, and Spring application startup.
 
 Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator can be run through the console demo or tests and is not connected to an HTTP endpoint or Spring Boot application startup.
 
@@ -83,7 +84,7 @@ mvn test
 Expected result:
 
 ```text
-Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -98,6 +99,16 @@ Expect four passing tests. These check generated values and bounds, coverage of 
 In Eclipse, import `backend/` as an existing Maven project using JDK 21. Refresh the project after external file changes. Right-click a test class and choose **Run As → JUnit Test**.
 
 ## Simulator behavior
+
+`SimulationSettings` validates positive, ordered amount bounds, nonnegative ordered latency bounds, and a finite success probability between 0 and 1. Both bounds are inclusive, including when they are equal. Custom settings can be supplied through `new PaymentSimulator(random, settings)`.
+
+| Scenario | Success probability | Latency range |
+| --- | --- | --- |
+| `NORMAL` (default) | 90% | 10–500 ms |
+| `DEGRADED` | 70% | 300–2,000 ms |
+| `OUTAGE` | 10% | 1,000–5,000 ms |
+
+All three use $0.01–$500.00 USD amounts. Scenario names describe generated conditions; they are not detection results. These are illustrative independent random samples, not a calibrated model of correlated payment traffic.
 
 Each call to `generateTransaction()` returns one event with these demo values:
 
