@@ -57,7 +57,7 @@ mvn spring-boot:run
 
 Expect Spring Boot startup logs and an embedded server on port 8080. Stop it with `Ctrl+C`. Starting the backend does not print simulated transactions yet.
 
-The Maven wrapper is included, but its Windows script encountered a `Cannot index into a null array` error in the development environment. The commands documented here use installed Maven, which was used successfully for testing.
+The included Maven wrapper can also be used: `./mvnw` on macOS/Linux or `.\mvnw.cmd` on Windows. It downloads Maven on first use, so initial setup requires internet access. JDK 21 is required. The Windows wrapper handles both ordinary and linked Maven repository directories. Spring Boot's main class is explicitly configured so the console demo does not interfere with executable JAR packaging.
 
 ## Run the console demo
 
@@ -114,16 +114,25 @@ Amounts are generated as integer cents and converted to `BigDecimal` to avoid fl
 
 The constructor accepts a `Random` instance. Using the same seed reproduces the sequence of amounts, statuses, and latencies. UUIDs and timestamps are generated independently and are not reproduced by that seed.
 
-## Roadmap
+## Five-part delivery plan
 
-| Phase | Scope | Status |
+| Part | Scope | Status |
 | --- | --- | --- |
-| 1 | Transaction domain model and Java payment simulator | In progress |
-| 2 | Kafka event streaming | Planned |
-| 3 | Metric aggregation and PostgreSQL/TimescaleDB storage | Planned |
-| 4 | Anomaly detection | Planned |
-| 5 | Predictive incident model | Planned |
-| 6 | Incident intelligence and AI explanations | Planned |
-| 7 | Expanded testing, observability, Docker, AWS, documentation, and demo polish | Planned |
+| 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | In progress |
+| 2 | Kafka streaming, metric aggregation, PostgreSQL/TimescaleDB storage (original Phases 2–3) | Planned |
+| 3 | Monitoring and anomaly detection (original Phase 4) | Planned |
+| 4 | Predictive incident model and AI-assisted investigation (original Phases 5–6) | Planned |
+| 5 | React UI, expanded observability and testing, Docker, AWS, and demo polish (original Phase 7 plus frontend) | Planned |
 
 A React frontend is also planned for a later stage. Tests and documentation are added incrementally as the backend develops.
+
+Each part is delivered as roughly six focused commits with README updates. Part 1 deliberately uses no Kafka, database, AI, authentication, Docker, or frontend dependencies.
+
+### Part 1 checkpoints
+
+1. Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.
+2. Validated simulation settings and named demo scenarios.
+3. Repeatable simulation with injectable time and event IDs.
+4. Configurable finite console runner with input validation and cancellation.
+5. Bounded HTTP simulation preview with useful validation errors.
+6. End-to-end verification and a reproducible demo guide.
