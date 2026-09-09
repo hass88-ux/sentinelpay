@@ -4,7 +4,7 @@ SentinelPay is a Java-first project working toward predictive monitoring and inc
 
 ## Current progress
 
-Phase 1 is in progress. The backend currently includes:
+Part 1 implements the Java simulator foundation. The backend currently includes:
 
 - A Spring Boot application that runs on port 8080.
 - An immutable `TransactionEvent` record representing one completed simulated payment attempt.
@@ -13,6 +13,7 @@ Phase 1 is in progress. The backend currently includes:
 - A plain Java `PaymentSimulator` that generates one event per method call.
 - A standalone console demo that prints ten simulated transactions and exits.
 - Validated simulator settings and synthetic normal, degraded, and outage scenarios.
+- A bounded HTTP preview with structured validation errors and request-local random state.
 - JUnit coverage of the model, generator, settings, and Spring application startup.
 
 Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator runs through the console demo, HTTP preview, or tests. It does not start a background producer on application startup.
@@ -37,12 +38,26 @@ backend/
     simulator/
       PaymentSimulator.java
       PaymentSimulatorDemo.java
+      SimulationSettings.java
+      SimulationScenario.java
+      SimulationRunner.java
+      DemoOptions.java
+      api/
+        SimulationController.java
+        SimulationPreview.java
+        SimulationErrorHandler.java
   src/main/resources/
     application.properties
   src/test/java/com/sentinelpay/backend/
     BackendApplicationTests.java
     transaction/TransactionEventTest.java
     simulator/PaymentSimulatorTest.java
+    simulator/SimulationSettingsTest.java
+    simulator/SimulationReplayTest.java
+    simulator/PaymentSimulatorDemoTest.java
+    simulator/SimulationApiTest.java
+  scripts/verify-part1.ps1
+docs/part-1-demo.md
 ```
 
 The transaction package defines valid payment event data. The simulator depends on that model and creates events without requiring Spring. Spring Boot provides the application entry point for later integration work.
@@ -106,7 +121,7 @@ mvn test
 Expected result:
 
 ```text
-Failures: 0, Errors: 0, Skipped: 0
+Tests run: 57, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -132,7 +147,7 @@ In Eclipse, import `backend/` as an existing Maven project using JDK 21. Refresh
 
 All three use $0.01–$500.00 USD amounts. Scenario names describe generated conditions; they are not detection results. These are illustrative independent random samples, not a calibrated model of correlated payment traffic.
 
-Each call to `generateTransaction()` returns one event with these demo values:
+With the default NORMAL settings, each call to `generateTransaction()` returns one event with these demo values:
 
 | Field | Behavior |
 | --- | --- |
@@ -153,7 +168,7 @@ For complete event replay in tests, the four-argument constructor also accepts a
 
 | Part | Scope | Status |
 | --- | --- | --- |
-| 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | In progress |
+| 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | Complete for this checkpoint |
 | 2 | Kafka streaming, metric aggregation, PostgreSQL/TimescaleDB storage (original Phases 2–3) | Planned |
 | 3 | Monitoring and anomaly detection (original Phase 4) | Planned |
 | 4 | Predictive incident model and AI-assisted investigation (original Phases 5–6) | Planned |
@@ -165,9 +180,17 @@ Each part is delivered as roughly six focused commits with README updates. Part 
 
 ### Part 1 checkpoints
 
-1. Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.
-2. Validated simulation settings and named demo scenarios.
-3. Repeatable simulation with injectable time and event IDs.
-4. Configurable finite console runner with input validation and cancellation.
-5. Bounded HTTP simulation preview with useful validation errors.
-6. End-to-end verification and a reproducible demo guide.
+- [x] Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.
+- [x] Validated simulation settings and named demo scenarios.
+- [x] Repeatable simulation with injectable time and event IDs.
+- [x] Configurable finite console runner with input validation and cancellation.
+- [x] Bounded HTTP simulation preview with useful validation errors.
+- [x] End-to-end verification and a reproducible demo guide.
+
+## Verify and demonstrate Part 1
+
+From `backend/`, run `.\scripts\verify-part1.ps1` in PowerShell. It runs the test suite and packages the application, verifies ten-event console output, then starts the JAR on a temporary loopback port and checks health, all three HTTP scenarios, seed replay, and oversized-request rejection. It stops its own server in a `finally` block and keeps logs under ignored `target/`. No existing server on port 8080 is stopped.
+
+For manual commands, expected behavior, and architecture talking points, see the [Part 1 demo guide](docs/part-1-demo.md). Tests are functional checks, not performance benchmarks. The wrapper and smoke script have been exercised on Windows with Java 21; other operating systems have not yet been verified.
+
+Verified on September 9, 2026: all 57 JUnit tests passed with no failures, errors, or skips. The smoke script passed against the executable JAR, including real HTTP responses for health, NORMAL/DEGRADED/OUTAGE previews, repeatable seeded fields, fresh IDs, disabled response caching, and HTTP 400 for oversized batches. The Unix wrapper is marked executable in Git; its platform-specific behavior remains untested here.
