@@ -184,6 +184,8 @@ Part 2 adds opt-in Kafka and PostgreSQL integration. The local development path 
 
 Six checkpoints: infrastructure and configuration; transactional event storage and minute metrics; Kafka publishing and consumption; pipeline HTTP controls and queries; failure/replay integration checks; local launch, end-to-end verification, and documentation. PostgreSQL is the supported storage engine in this part. TimescaleDB-specific hypertables and retention are deferred until the extension can be run and tested; no TimescaleDB compatibility claim is made yet.
 
+Storage now uses Flyway migration `V1__payment_events_and_minute_metrics.sql`. `PaymentStore` inserts a raw payment and updates its UTC event-time minute/currency rollup in one database transaction. Replaying an identical ID is a no-op; reusing an ID with different data is rejected. PostgreSQL timestamps are normalized to microseconds. Each minute stores count, successes, failures, total attempted amount, latency sum, and maximum latency; average latency is derived from the sum/count. Late events update their original minute. Amounts of different currencies are never added together. Real PostgreSQL tests cover exact rollups, concurrent replay, rollback, time precision, and numeric overflow handling.
+
 ### Part 1 checkpoints
 
 - [x] Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.
