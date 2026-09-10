@@ -81,6 +81,17 @@ checks. `GET /api/intelligence/forecasts?currency=USD` forecasts the latest elig
 completed minute, even before an alert exists. Reports distinguish historical
 rule evidence from forecasts recalculated using currently stored metrics.
 
+Optional AI uses Ollama's local [generate API](https://docs.ollama.com/api/generate).
+`POST /api/intelligence/incidents/{id}/explanation` always includes the deterministic
+report. AI is disabled by default; when enabled it adds unverified model suggestions
+without changing measured evidence, forecasts, or case state. Responses have a
+30-second deadline, 64-KiB size cap, and validated rule references. Failures fall
+back to deterministic output. Only one local generation runs at a time.
+Use an installed local model and configure Ollama with `OLLAMA_NO_CLOUD=1` before
+starting its server; a loopback URL alone does not prevent Ollama cloud forwarding.
+The adapter is contract-tested against a local HTTP stub; live model quality has
+not been evaluated on this machine.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven

@@ -14,7 +14,16 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/intelligence")
 public class IncidentController {
     private final IncidentStore store;
-    public IncidentController(IncidentStore store) { this.store=store; }
+    private final OllamaExplainer explainer;
+    public IncidentController(IncidentStore store, OllamaExplainer explainer) {
+        this.store=store;
+        this.explainer=explainer;
+    }
+
+    @PostMapping("/incidents/{id}/explanation")
+    public ResponseEntity<OllamaExplainer.Explanation> explain(@PathVariable UUID id) {
+        return response(explainer.explain(investigate(id)));
+    }
 
     @GetMapping("/incidents")
     public ResponseEntity<List<IncidentStore.Incident>> cases(
@@ -27,11 +36,16 @@ public class IncidentController {
         return response(investigate(id));
     }
     @GetMapping("/forecasts")
-    public ResponseEntity<List<TrendForecaster.Forecast>> forecasts(@RequestParam(defaultValue="USD") String currency) {
+    public ResponseEntity<List<TrendForecaster.Forecast>> forecasts(@RequestParam(defaultValue="USD") String currency,
+            @RequestParam(required=false) Instant asOf) {
         if (!currency.matches("[A-Z]{3}")) throw new IllegalArgumentException("currency must be a three-letter uppercase code");
         Currency.getInstance(currency);
-        var asOf=Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MINUTES).minusSeconds(60);
-        return response(new TrendForecaster().forecast(currency,asOf,store.history(currency,asOf)));
+        var latest=Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MINUTES).minusSeconds(60);
+        var end=asOf == null ? latest : asOf;
+        if (!end.equals(end.truncatedTo(ChronoUnit.MINUTES)) || end.isAfter(latest)
+                || end.isBefore(latest.minusSeconds(86400)))
+            throw new IllegalArgumentException("asOf must be a completed UTC minute within the last 24 hours");
+        return response(new TrendForecaster().forecast(currency,end,store.history(currency,end)));
     }
     Investigator.Report investigate(UUID id) {
         var snapshot=store.snapshot(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Incident case not found"));
