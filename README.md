@@ -199,6 +199,8 @@ Storage now uses Flyway migration `V1__payment_events_and_minute_metrics.sql`. `
 
 ### Part 1 checkpoints
 
+Failure-path verification uses real Kafka/PostgreSQL: a malformed message reaches the dead-letter topic while the following valid payment is consumed; terminating a blocked database connection leaves the source offset uncommitted until the retry succeeds. Publisher tests cover partial acknowledgment, uncertain delivery, interruption, and whole-batch validation before sending. These checks validate failure behavior locally, not high-availability guarantees.
+
 The `pipeline` Spring profile now wires Kafka and PostgreSQL explicitly. Version-1 JSON envelopes preserve decimal amounts and require the Kafka key to equal the event ID. Database commits occur before record acknowledgments. Invalid records are published to a separate dead-letter topic with Kafka error headers; a failed dead-letter publish does not acknowledge the original. Database and unexpected processing failures remain retryable rather than being discarded. This is at-least-once delivery with idempotent database effects, not a claim of distributed exactly-once transactions. A real-broker integration test verifies delivery and replay through the full consumer into PostgreSQL.
 
 - [x] Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.

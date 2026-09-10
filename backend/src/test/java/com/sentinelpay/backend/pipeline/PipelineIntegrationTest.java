@@ -95,4 +95,69 @@ class PipelineIntegrationTest {
             assertEquals(400, request("GET", "/api/pipeline/metrics?" + query).statusCode(), query);
         }
     }
+
+    @Test
+    void malformedRecordGoesToDeadLettersAndDoesNotBlockFollowingPayment() throws Exception {
+        String badId = "bad-" + java.util.UUID.randomUUID();
+        var consumerProps = new java.util.HashMap<String, Object>();
+        consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, runtime.kafka.getBrokersAsString());
+        consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        try (var deadLetters = new org.apache.kafka.clients.consumer.KafkaConsumer<String, String>(consumerProps,
+                new org.apache.kafka.common.serialization.StringDeserializer(), new org.apache.kafka.common.serialization.StringDeserializer())) {
+            var partition = new org.apache.kafka.common.TopicPartition(properties.deadLetterTopic(), 0);
+            deadLetters.assign(java.util.List.of(partition));
+            deadLetters.seekToBeginning(java.util.List.of(partition));
+            kafka.send(properties.topic(), 0, badId, "{invalid-json").get(10, TimeUnit.SECONDS);
+            var marker = new PaymentSimulator(new Random(2)).generateTransaction();
+            kafka.send(properties.topic(), 0, marker.id(), codec.encode(marker)).get(10, TimeUnit.SECONDS);
+            await().atMost(Duration.ofSeconds(30)).until(() -> store.find(marker.id()).isPresent());
+            var found = new java.util.concurrent.atomic.AtomicReference<org.apache.kafka.clients.consumer.ConsumerRecord<String, String>>();
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                for (var record : deadLetters.poll(Duration.ofMillis(100))) {
+                    if (badId.equals(record.key())) found.set(record);
+                }
+                return found.get() != null;
+            });
+            assertEquals("{invalid-json", found.get().value());
+            assertTrue(found.get().headers().iterator().hasNext());
+            assertTrue(store.find(badId).isEmpty());
+        }
+    }
+
+    @Test
+    void databaseConnectionFailureDoesNotCommitKafkaOffsetAndRecovers() throws Exception {
+        var event = new PaymentSimulator(new Random(3)).generateTransaction();
+        var observer = new org.springframework.jdbc.core.JdbcTemplate(runtime.postgres.getPostgresDatabase());
+        try (var lock = runtime.postgres.getPostgresDatabase().getConnection();
+                var admin = org.apache.kafka.clients.admin.Admin.create(java.util.Map.of(
+                        "bootstrap.servers", runtime.kafka.getBrokersAsString()))) {
+            lock.setAutoCommit(false);
+            try (var statement = lock.createStatement()) {
+                statement.execute("LOCK TABLE payment_event IN ACCESS EXCLUSIVE MODE");
+            }
+            var metadata = kafka.send(properties.topic(), 0, event.id(), codec.encode(event))
+                    .get(10, TimeUnit.SECONDS).getRecordMetadata();
+            var blockedPid = new java.util.concurrent.atomic.AtomicInteger();
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                var rows = observer.queryForList("SELECT pid FROM pg_stat_activity WHERE wait_event_type = 'Lock' "
+                        + "AND query LIKE 'INSERT INTO payment_event%'", Integer.class);
+                if (!rows.isEmpty()) blockedPid.set(rows.getFirst());
+                return blockedPid.get() != 0;
+            });
+            observer.queryForObject("SELECT pg_terminate_backend(?)", Boolean.class, blockedPid.get());
+            await().atMost(Duration.ofSeconds(20)).until(() -> observer.queryForObject(
+                    "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' "
+                    + "AND query LIKE 'INSERT INTO payment_event%' AND pid <> ?", Integer.class, blockedPid.get()) > 0);
+            var offsets = admin.listConsumerGroupOffsets(properties.groupId()).partitionsToOffsetAndMetadata().get(5, TimeUnit.SECONDS);
+            var committed = offsets.get(new org.apache.kafka.common.TopicPartition(properties.topic(), 0));
+            assertTrue(committed == null || committed.offset() <= metadata.offset(), "uncommitted database event must remain replayable");
+            lock.rollback();
+            await().atMost(Duration.ofSeconds(30)).until(() -> store.find(event.id()).isPresent());
+            await().atMost(Duration.ofSeconds(10)).until(() -> {
+                var offset = admin.listConsumerGroupOffsets(properties.groupId()).partitionsToOffsetAndMetadata()
+                        .get(5, TimeUnit.SECONDS).get(new org.apache.kafka.common.TopicPartition(properties.topic(), 0));
+                return offset != null && offset.offset() > metadata.offset();
+            });
+        }
+    }
 }
