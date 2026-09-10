@@ -22,6 +22,10 @@ Continuous background generation, anomaly detection, prediction, AI explanations
 
 ## Current stack
 
+Part 3 is in progress: explainable failure-rate and average-latency rules require
+20 payments per minute/currency. Warning/critical thresholds are 20%/50% and
+1000/2000 ms, inclusive. These are demo settings, not calibrated production limits.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
