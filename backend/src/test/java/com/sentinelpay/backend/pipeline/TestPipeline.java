@@ -2,24 +2,33 @@ package com.sentinelpay.backend.pipeline;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import com.sentinelpay.backend.BackendApplication;
 
 /** Owns isolated real infrastructure; close the app before stopping its dependencies. */
 final class TestPipeline implements AutoCloseable {
     final EmbeddedPostgres postgres;
-    final EmbeddedKafkaKraftBroker kafka;
+    LocalKafka kafka;
     ConfigurableApplicationContext context;
+    private boolean closed;
 
     TestPipeline() throws Exception {
-        postgres = EmbeddedPostgres.builder().start();
-        kafka = new EmbeddedKafkaKraftBroker(1, 3);
+        this(null, 0);
+    }
+
+    TestPipeline(java.nio.file.Path dataDirectory, int port) throws Exception {
+        var builder = EmbeddedPostgres.builder().setServerConfig("listen_addresses", "127.0.0.1");
+        if (dataDirectory != null) builder.setDataDirectory(dataDirectory).setCleanDataDirectory(false);
+        postgres = builder.start();
         try {
-            kafka.afterPropertiesSet();
+            var kafkaDirectory = dataDirectory == null
+                    ? java.nio.file.Files.createTempDirectory(java.nio.file.Path.of("target"), "part2-kafka-")
+                    : dataDirectory.resolveSibling("kafka");
+            kafka = new LocalKafka(kafkaDirectory);
             var application = new SpringApplication(BackendApplication.class);
             application.setAdditionalProfiles("pipeline");
-            context = application.run("--server.port=0", "--server.address=127.0.0.1",
+            application.setRegisterShutdownHook(false);
+            context = application.run("--server.port=" + port, "--server.address=127.0.0.1",
                     "--pipeline.bootstrap-servers=" + kafka.getBrokersAsString(),
                     "--pipeline.jdbc-url=" + postgres.getJdbcUrl("postgres", "postgres"),
                     "--pipeline.username=postgres", "--pipeline.password=postgres");
@@ -30,11 +39,13 @@ final class TestPipeline implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public synchronized void close() throws Exception {
+        if (closed) return;
+        closed = true;
         try {
             if (context != null) context.close();
         } finally {
-            try { kafka.destroy(); } finally { postgres.close(); }
+            try { if (kafka != null) kafka.close(); } finally { postgres.close(); }
         }
     }
 }

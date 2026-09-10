@@ -4,7 +4,7 @@ SentinelPay is a Java-first project working toward predictive monitoring and inc
 
 ## Current progress
 
-Part 1 implements the Java simulator foundation. The backend currently includes:
+Parts 1 and 2 build the simulator and its opt-in streaming/storage pipeline. The backend currently includes:
 
 - A Spring Boot application that runs on port 8080.
 - An immutable `TransactionEvent` record representing one completed simulated payment attempt.
@@ -15,8 +15,10 @@ Part 1 implements the Java simulator foundation. The backend currently includes:
 - Validated simulator settings and synthetic normal, degraded, and outage scenarios.
 - A bounded HTTP preview with structured validation errors and request-local random state.
 - JUnit coverage of the model, generator, settings, and Spring application startup.
+- Real Kafka delivery, PostgreSQL event storage, and atomic per-minute/currency metrics.
+- Pipeline HTTP publishing and queries, replay deduplication, dead letters, and recovery tests.
 
-Continuous generation, event streaming, storage, monitoring metrics, detection, prediction, and AI explanations are planned features. The simulator runs through the console demo, HTTP preview, or tests. It does not start a background producer on application startup.
+Continuous background generation, anomaly detection, prediction, AI explanations, and a frontend are planned features. The simulator runs through the console demo, HTTP preview, pipeline publishing API, or tests. It does not start a background producer on application startup.
 
 ## Current stack
 
@@ -24,6 +26,7 @@ Continuous generation, event streaming, storage, monitoring metrics, detection, 
 - Spring Boot 4.1.1
 - Maven
 - JUnit
+- Spring Kafka, PostgreSQL JDBC, HikariCP, and Flyway (pipeline profile)
 
 ## Structure
 
@@ -35,6 +38,19 @@ backend/
     transaction/
       TransactionEvent.java
       TransactionStatus.java
+    pipeline/
+      PipelineConfiguration.java
+      PipelineProperties.java
+      PaymentMessage.java
+      PaymentMessageCodec.java
+      PaymentPublisher.java
+      PaymentConsumer.java
+      PaymentStore.java
+      MinuteMetric.java
+      PublishReport.java
+      PublishUnavailableException.java
+      api/PipelineController.java
+      api/PipelineErrorHandler.java
     simulator/
       PaymentSimulator.java
       PaymentSimulatorDemo.java
@@ -48,6 +64,8 @@ backend/
         SimulationErrorHandler.java
   src/main/resources/
     application.properties
+    application-pipeline.properties
+    db/migration/V1__payment_events_and_minute_metrics.sql
   src/test/java/com/sentinelpay/backend/
     BackendApplicationTests.java
     transaction/TransactionEventTest.java
@@ -56,11 +74,34 @@ backend/
     simulator/SimulationReplayTest.java
     simulator/PaymentSimulatorDemoTest.java
     simulator/SimulationApiTest.java
+    pipeline/  # real Kafka/PostgreSQL tests and development launcher
   scripts/verify-part1.ps1
+  scripts/start-part2.ps1
+  scripts/verify-part2.ps1
 docs/part-1-demo.md
+docs/part-2-demo.md
 ```
 
-The transaction package defines valid payment event data. The simulator depends on that model and creates events without requiring Spring. Spring Boot provides the application entry point for later integration work.
+The transaction package defines valid payment data. The simulator creates events without requiring Spring. The optional pipeline profile connects HTTP publishing to Kafka, a Java consumer, and PostgreSQL events/minute metrics. The default profile remains a standalone preview.
+
+## Run the local pipeline
+
+From the repository root in PowerShell:
+
+```powershell
+cd backend
+.\scripts\start-part2.ps1
+```
+
+Wait for the ready message on port 8081. This launches real development Kafka/PostgreSQL through Java test dependencies; it does not require Docker or an installed database. In a second terminal:
+
+```powershell
+$batch = Invoke-RestMethod -Method Post 'http://localhost:8081/api/pipeline/simulations?count=10&scenario=DEGRADED&seed=42'
+$batch | ConvertTo-Json -Depth 5
+Invoke-RestMethod 'http://localhost:8081/api/pipeline/metrics' | ConvertTo-Json -Depth 5
+```
+
+Consumption is asynchronous, so metrics may appear shortly after the publish response. PostgreSQL data and Kafka logs survive under ignored `backend/.local/postgres/` and `backend/.local/kafka/`. Press Enter in the launcher terminal to stop cleanly. Run `.\scripts\verify-part2.ps1` for isolated end-to-end verification, including stored history and pending Kafka delivery across restart. See the [Part 2 guide](docs/part-2-demo.md) for ID lookup, failure semantics, credentials, limits, and externally managed services. All local listeners bind to loopback; this single-broker setup is not a production deployment.
 
 ## Run the backend
 
@@ -132,7 +173,7 @@ mvn test
 Expected result:
 
 ```text
-Tests run: 57, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -180,28 +221,30 @@ For complete event replay in tests, the four-argument constructor also accepts a
 | Part | Scope | Status |
 | --- | --- | --- |
 | 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | Complete for this checkpoint |
-| 2 | Kafka streaming, metric aggregation, PostgreSQL storage (original Phases 2–3; TimescaleDB extension deferred) | In progress |
+| 2 | Kafka streaming, metric aggregation, PostgreSQL storage (original Phases 2–3; TimescaleDB extension deferred) | Complete for this checkpoint |
 | 3 | Monitoring and anomaly detection (original Phase 4) | Planned |
 | 4 | Predictive incident model and AI-assisted investigation (original Phases 5–6) | Planned |
 | 5 | React UI, expanded observability and testing, Docker, AWS, and demo polish (original Phase 7 plus frontend) | Planned |
 
 A React frontend is also planned for a later stage. Tests and documentation are added incrementally as the backend develops.
 
-Each part is delivered as roughly six focused commits with README updates. Part 1 deliberately uses no Kafka, database, AI, authentication, Docker, or frontend dependencies.
+Each part is delivered as roughly six focused commits with README updates. Kafka and database dependencies were introduced in Part 2; the default simulator still runs without starting either service.
 
 ### Part 2 implementation
 
-Part 2 adds opt-in Kafka and PostgreSQL integration. The local development path uses [Spring Kafka's embedded broker](https://docs.spring.io/spring-kafka/reference/testing.html) and [Zonky's native embedded PostgreSQL](https://github.com/zonkyio/embedded-postgres), both test-scope dependencies, to run real processes without Docker or a system database installation. They are excluded from the application JAR. The default application remains a standalone preview; infrastructure is only required for the upcoming `pipeline` profile. Local database files belong under ignored `backend/.local/`.
+Part 2 adds opt-in Kafka and PostgreSQL integration. Kafka's native broker classes are available through the [Spring Kafka test dependency](https://docs.spring.io/spring-kafka/reference/testing.html), and [Zonky's native embedded PostgreSQL](https://github.com/zonkyio/embedded-postgres) supplies a local database. Both are test-scope dependencies excluded from the application JAR. The development launcher starts a real KRaft broker with loopback listeners and persistent logs, alongside native PostgreSQL, without Docker or a system database installation. The default application remains a standalone preview; infrastructure is only required for the `pipeline` profile. Local data belongs under ignored `backend/.local/`.
 
 Six checkpoints: infrastructure and configuration; transactional event storage and minute metrics; Kafka publishing and consumption; pipeline HTTP controls and queries; failure/replay integration checks; local launch, end-to-end verification, and documentation. PostgreSQL is the supported storage engine in this part. TimescaleDB-specific hypertables and retention are deferred until the extension can be run and tested; no TimescaleDB compatibility claim is made yet.
 
-Storage now uses Flyway migration `V1__payment_events_and_minute_metrics.sql`. `PaymentStore` inserts a raw payment and updates its UTC event-time minute/currency rollup in one database transaction. Replaying an identical ID is a no-op; reusing an ID with different data is rejected. PostgreSQL timestamps are normalized to microseconds. Each minute stores count, successes, failures, total attempted amount, latency sum, and maximum latency; average latency is derived from the sum/count. Late events update their original minute. Amounts of different currencies are never added together. Real PostgreSQL tests cover exact rollups, concurrent replay, rollback, time precision, and numeric overflow handling.
+Verified on September 10, 2026: all 80 JUnit tests passed with no failures, errors, or skips. The Part 2 verification script then published all three scenarios, checked 15 stored IDs and metric totals, verified HTTP limits, and restarted the local stack. Stored history survived, and an acknowledged payment deliberately left pending in Kafka was delivered after restart. Testing used Windows and Java 21 with real native PostgreSQL and Kafka; this is functional verification, not a throughput, accuracy, or availability benchmark.
 
-### Part 1 checkpoints
+Storage now uses Flyway migration `V1__payment_events_and_minute_metrics.sql`. `PaymentStore` inserts a raw payment and updates its UTC event-time minute/currency rollup in one database transaction. Replaying an identical ID is a no-op; reusing an ID with different data is rejected. PostgreSQL timestamps are normalized to microseconds. Each minute stores count, successes, failures, total attempted amount, latency sum, and maximum latency; average latency is derived from the sum/count. Late events update their original minute. Amounts of different currencies are never added together. Real PostgreSQL tests cover exact rollups, concurrent replay, rollback, time precision, and numeric overflow handling.
 
 Failure-path verification uses real Kafka/PostgreSQL: a malformed message reaches the dead-letter topic while the following valid payment is consumed; terminating a blocked database connection leaves the source offset uncommitted until the retry succeeds. Publisher tests cover partial acknowledgment, uncertain delivery, interruption, and whole-batch validation before sending. These checks validate failure behavior locally, not high-availability guarantees.
 
 The `pipeline` Spring profile now wires Kafka and PostgreSQL explicitly. Version-1 JSON envelopes preserve decimal amounts and require the Kafka key to equal the event ID. Database commits occur before record acknowledgments. Invalid records are published to a separate dead-letter topic with Kafka error headers; a failed dead-letter publish does not acknowledge the original. Database and unexpected processing failures remain retryable rather than being discarded. This is at-least-once delivery with idempotent database effects, not a claim of distributed exactly-once transactions. A real-broker integration test verifies delivery and replay through the full consumer into PostgreSQL.
+
+### Part 1 checkpoints
 
 - [x] Reliable Maven wrapper, explicit Spring Boot entry point, and five-part plan.
 - [x] Validated simulation settings and named demo scenarios.

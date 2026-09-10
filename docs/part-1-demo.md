@@ -2,6 +2,8 @@
 
 This checkpoint demonstrates a Java payment-event generator and an HTTP preview. It does not yet monitor real payments or detect incidents.
 
+This guide describes the Part 1 checkpoint. Kafka, storage, and minute metrics were added afterward; see the [Part 2 guide](part-2-demo.md) for the current pipeline.
+
 ## 1. Verify the checkpoint
 
 Open PowerShell in the repository root:
