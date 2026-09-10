@@ -31,6 +31,11 @@ the preceding ten minutes, for the same currency. Five baseline minutes with at
 least 20 payments each are required. At or below 50% is warning; 20% is critical.
 Missing minutes are unknown, so this rule does not detect a completely silent feed.
 
+Monitoring persists one evaluation per minute/currency/rule. It scans the latest
+30 completed minutes after a ten-second grace period and rechecks late arrivals.
+The first alert time is retained even if a subsequent evaluation becomes normal.
+PostgreSQL serializes concurrent scans using a transaction-scoped advisory lock.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
