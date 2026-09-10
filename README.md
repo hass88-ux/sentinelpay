@@ -100,6 +100,17 @@ The interval is a delay between emissions, separate from the event's simulated l
 
 ## HTTP preview
 
+### Pipeline endpoints (opt-in `pipeline` profile)
+
+- `POST /api/pipeline/simulations?count=10&scenario=NORMAL&seed=42` publishes 1–100 generated events. HTTP 202 reports Kafka-acknowledged IDs; database consumption is asynchronous. HTTP 503 reports acknowledged IDs plus an uncertain ID if publishing stops partway. A timed-out event can still arrive, and repeating a simulation request creates new IDs rather than replaying the old batch.
+- `GET /api/pipeline/transactions/{id}` returns a stored event or 404. An immediate 404 after publishing can mean consumption is still pending.
+- `GET /api/pipeline/transactions?limit=20` returns the newest stored events (limit 1–100).
+- `GET /api/pipeline/metrics?limit=60` returns the latest minute/currency buckets from the last hour. Supply both `from` and `to` as minute-aligned ISO UTC timestamps to query another range, up to 24 hours. The lower bound is inclusive and upper bound exclusive; limits are 1–100 and results are newest first. Empty minutes are absent, not zero-filled. For more than 100 buckets, query smaller time ranges.
+
+These endpoints are unavailable in the default preview-only application. The pipeline profile binds to loopback by default and is for local development; it has no authentication or rate limiting. Query responses disable caching and invalid input receives HTTP 400 problem details.
+
+### Standalone preview
+
 With the backend running on port 8080:
 
 ```powershell
