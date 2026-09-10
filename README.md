@@ -44,6 +44,12 @@ historical findings. Default queries return warning/critical findings. These are
 historical bucket results, not a claim that an incident is still happening now.
 Use `monitoring.scheduling-enabled=false` to disable automatic scans.
 
+Part 3 checks cover threshold boundaries, insufficient history, same-currency
+baselines, advisory-lock contention, late-data correction, scan failure/recovery,
+and a real Kafka/PostgreSQL/HTTP scenario with scheduled detection and restart.
+Run `backend/scripts/verify-part3.ps1` for the full suite and packaged application.
+Its temporary infrastructure uses random ports and data under `backend/target/`.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven

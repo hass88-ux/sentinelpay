@@ -7,6 +7,32 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sentinelpay.backend.pipeline.MinuteMetric;
 
 class PaymentDetectorTest {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"3,NORMAL", "4,WARNING", "9,WARNING", "10,CRITICAL", "20,CRITICAL"})
+    void failureBoundaries(long failed, PaymentDetector.State expected) {
+        assertEquals(expected,new PaymentDetector().evaluate(metric(20,failed,"100")).getFirst().state());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"999.999,NORMAL", "1000,WARNING", "1999.999,WARNING", "2000,CRITICAL"})
+    void latencyBoundaries(String latency, PaymentDetector.State expected) {
+        assertEquals(expected,new PaymentDetector().evaluate(metric(20,0,latency)).get(1).state());
+    }
+
+    @Test void medianResistsOutlierAndExcludesOldFutureAndSmallBuckets() {
+        var current=metric(50,0,"100");
+        var history=new java.util.ArrayList<MinuteMetric>();
+        for (int i=1;i<=6;i++) history.add(new MinuteMetric(current.bucket().minusSeconds(i*60),"USD",
+                i==6 ? 10000 : 100, i==6 ? 10000 : 100,0,BigDecimal.TEN,BigDecimal.TEN,10));
+        var detector=new PaymentDetector();
+        assertEquals(PaymentDetector.State.WARNING,detector.volume(current,history).state());
+        assertEquals(0,new BigDecimal("50").compareTo(detector.volume(current,history).warningThreshold()));
+        var unusable=java.util.List.of(
+                new MinuteMetric(current.bucket().minusSeconds(601),"USD",100,100,0,BigDecimal.TEN,BigDecimal.TEN,10),
+                new MinuteMetric(current.bucket().plusSeconds(60),"USD",100,100,0,BigDecimal.TEN,BigDecimal.TEN,10),
+                new MinuteMetric(current.bucket().minusSeconds(60),"USD",19,19,0,BigDecimal.TEN,BigDecimal.TEN,10));
+        assertEquals(PaymentDetector.State.INSUFFICIENT_DATA,detector.volume(current,unusable).state());
+    }
     @Test void volumeUsesOnlyPastSameCurrencyAndNeedsHistory() {
         var detector = new PaymentDetector();
         var current = metric(20,0,"100");

@@ -19,6 +19,13 @@ class MonitoringStoreTest {
             var monitor = new MonitoringStore(source);
             var bucket = Instant.parse("2026-09-10T12:00:00Z");
             assertEquals("NO_DATA",monitor.evaluate(bucket).state());
+            try (var connection=source.getConnection()) {
+                connection.setAutoCommit(false);
+                try (var statement=connection.createStatement()) {
+                    statement.execute("SELECT pg_advisory_xact_lock(736281904)");
+                    assertEquals("BUSY",monitor.evaluate(bucket).state());
+                } finally { connection.rollback(); }
+            }
             for (int i=0;i<20;i++) payments.save(event("failed"+i,bucket,TransactionStatus.FAILED,2500));
             assertEquals("NO_DATA",monitor.evaluate(bucket.plusSeconds(69)).state());
             assertEquals(2,monitor.evaluate(bucket.plusSeconds(70)).alertEvaluations());
