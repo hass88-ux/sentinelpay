@@ -64,6 +64,12 @@ an automatic retention policy.
 
 ## Current stack
 
+Part 4 is in progress. A five-minute linear regression baseline projects failure
+percentage and average latency three minutes ahead. It requires consecutive
+same-currency buckets with at least 20 payments each and distinguishes insufficient
+data, unstable trends, existing threshold violations, and projected crossings.
+Historical R-squared is a fit measure, not a probability or accuracy claim.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
