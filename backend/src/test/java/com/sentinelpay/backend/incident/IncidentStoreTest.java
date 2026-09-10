@@ -15,8 +15,18 @@ class IncidentStoreTest {
     @Test void groupsRulesAndRetainsIdentityWhenLateDataClearsCase() throws Exception {
         try(var postgres=EmbeddedPostgres.builder().start()) {
             var source=postgres.getPostgresDatabase();
+            Flyway.configure().dataSource(source).target("2").load().migrate();
+            var jdbc=new org.springframework.jdbc.core.JdbcTemplate(source);
+            jdbc.update("""
+                INSERT INTO monitoring_evaluation(bucket,currency,rule,state,sample_count,observed,
+                    warning_threshold,critical_threshold,explanation,first_detected_at,evaluated_at)
+                VALUES ('2020-01-01T00:00:00Z','EUR','FAILURE_RATE','CRITICAL',100,90,20,50,
+                    'Historical failure rate','2020-01-01T00:02:00Z','2020-01-01T00:02:00Z')
+                """);
             Flyway.configure().dataSource(source).load().migrate();
             var store=new IncidentStore(source);
+            assertEquals("EUR",store.recent(false,100).getFirst().currency());
+            jdbc.execute("TRUNCATE incident_case,monitoring_evaluation");
             var payments=new PaymentStore(source);
             var monitoring=new MonitoringStore(source);
             var bucket=Instant.parse("2026-09-10T12:00:00Z");

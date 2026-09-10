@@ -86,11 +86,17 @@ Optional AI uses Ollama's local [generate API](https://docs.ollama.com/api/gener
 report. AI is disabled by default; when enabled it adds unverified model suggestions
 without changing measured evidence, forecasts, or case state. Responses have a
 30-second deadline, 64-KiB size cap, and validated rule references. Failures fall
-back to deterministic output. Only one local generation runs at a time.
+back to deterministic output. Each application process permits one in-flight AI
+request; cancelling a request does not guarantee the model server stops inference.
 Use an installed local model and configure Ollama with `OLLAMA_NO_CLOUD=1` before
 starting its server; a loopback URL alone does not prevent Ollama cloud forwarding.
 The adapter is contract-tested against a local HTTP stub; live model quality has
 not been evaluated on this machine.
+
+Run `backend/scripts/start-part4.ps1` for an isolated historical demo on port 8082.
+It seeds five rising minutes followed by a spike through Kafka, then prints the
+forecast and case URLs. Its temporary database does not use `backend/.local/`.
+`backend/scripts/verify-part4.ps1` runs all tests and packages the application.
 
 - Java 21
 - Spring Boot 4.1.1

@@ -20,23 +20,32 @@ public class LocalPipeline {
             verify();
             return;
         }
-        int port = args.length == 0 ? 8081 : Integer.parseInt(args[0]);
+        boolean incidentDemo = args.length == 1 && args[0].startsWith("--incident-demo=");
+        int port = incidentDemo ? Integer.parseInt(args[0].substring("--incident-demo=".length()))
+                : args.length == 0 ? 8081 : Integer.parseInt(args[0]);
         if (port < 1024 || port > 65535) throw new IllegalArgumentException("port must be between 1024 and 65535");
-        Path local = Path.of(".local").toAbsolutePath();
+        Path local = incidentDemo ? Files.createTempDirectory(Path.of("target"),"part4-demo-").toAbsolutePath()
+                : Path.of(".local").toAbsolutePath();
         Files.createDirectories(local);
         try (var channel = FileChannel.open(local.resolve("pipeline.lock"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                 var lock = channel.tryLock()) {
             if (lock == null) throw new IllegalStateException("A local pipeline already owns this database directory.");
-            try (var runtime = new TestPipeline(local.resolve("postgres"), port, true)) {
+            try (var runtime = new TestPipeline(local.resolve("postgres"), port, true, true)) {
                 var shutdown = new Thread(() -> {
                     try { runtime.close(); } catch (Exception ex) { System.err.println("Pipeline shutdown: " + ex.getMessage()); }
                 }, "local-pipeline-shutdown");
                 Runtime.getRuntime().addShutdownHook(shutdown);
-                System.out.println("SentinelPay pipeline ready at http://localhost:" + port);
-                System.out.println("PostgreSQL data: " + local.resolve("postgres"));
-                System.out.println("Kafka logs: " + local.resolve("kafka"));
-                System.out.println("Press Enter to stop the local pipeline cleanly.");
                 try {
+                    if (incidentDemo) {
+                        var result=IncidentDemo.seed(runtime);
+                        System.out.println("Historical forecast: http://localhost:"+port
+                                +"/api/intelligence/forecasts?currency=USD&asOf="+result.forecastAsOf());
+                        System.out.println("Incident report: http://localhost:"+port+"/api/intelligence/incidents/"+result.caseId());
+                    }
+                    System.out.println("SentinelPay pipeline ready at http://localhost:" + port);
+                    System.out.println("PostgreSQL data: " + local.resolve("postgres"));
+                    System.out.println("Kafka logs: " + local.resolve("kafka"));
+                    System.out.println("Press Enter to stop the local pipeline cleanly.");
                     new java.io.BufferedReader(new java.io.InputStreamReader(System.in)).readLine();
                 } finally {
                     try { Runtime.getRuntime().removeShutdownHook(shutdown); } catch (IllegalStateException ignored) { }

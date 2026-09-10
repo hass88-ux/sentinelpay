@@ -20,6 +20,7 @@ public class MonitoringIntegrationTest {
     void detectsCorrectsAndRetainsFindingsAfterRestart() throws Exception {
         var directory = Files.createTempDirectory(Path.of("target"),"part3-verify-").resolve("postgres");
         var bucket = Instant.now().truncatedTo(ChronoUnit.MINUTES).minusSeconds(120);
+        java.util.UUID caseId;
         try (var runtime = new TestPipeline(directory,0,true)) {
             var publisher = runtime.context.getBean(PaymentPublisher.class);
             var payments = runtime.context.getBean(PaymentStore.class);
@@ -37,6 +38,9 @@ public class MonitoringIntegrationTest {
             // This also proves the scheduled scan actually executes.
             await().atMost(Duration.ofSeconds(45)).until(() -> monitor.findings(false,100).size()==3);
             assertTrue(monitor.findings(false,100).stream().allMatch(f -> f.state().equals("CRITICAL")));
+            var cases=runtime.context.getBean(com.sentinelpay.backend.incident.IncidentStore.class);
+            assertEquals(1,cases.recent(false,100).size());
+            caseId=cases.recent(false,100).getFirst().id();
             assertEquals(200,request(runtime,"POST","/api/monitoring/runs").statusCode());
             var response = request(runtime,"GET","/api/monitoring/findings");
             assertEquals(200,response.statusCode());
@@ -51,12 +55,15 @@ public class MonitoringIntegrationTest {
             assertTrue(monitor.findings(false,100).isEmpty());
             assertEquals(3,monitor.findings(true,100).size());
             assertTrue(monitor.findings(true,100).stream().allMatch(f -> f.state().equals("NORMAL")));
+            assertEquals("CLEARED",cases.snapshot(caseId).orElseThrow().incident().state());
             assertEquals(200,request(runtime,"GET","/api/monitoring/status").statusCode());
         }
         try (var restarted = new TestPipeline(directory,0)) {
             var findings = restarted.context.getBean(MonitoringStore.class).findings(true,100);
             assertEquals(3,findings.size());
             assertTrue(findings.stream().allMatch(f -> f.state().equals("NORMAL")));
+            assertEquals("CLEARED",restarted.context.getBean(com.sentinelpay.backend.incident.IncidentStore.class)
+                    .snapshot(caseId).orElseThrow().incident().state());
         }
     }
 
