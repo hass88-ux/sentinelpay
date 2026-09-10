@@ -7,6 +7,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sentinelpay.backend.pipeline.MinuteMetric;
 
 class PaymentDetectorTest {
+    @Test void volumeUsesOnlyPastSameCurrencyAndNeedsHistory() {
+        var detector = new PaymentDetector();
+        var current = metric(20,0,"100");
+        var history = java.util.stream.IntStream.rangeClosed(1,5).mapToObj(i ->
+                new MinuteMetric(current.bucket().minusSeconds(i*60), "USD",100,100,0,
+                    BigDecimal.TEN, BigDecimal.TEN,10)).toList();
+        assertEquals(PaymentDetector.State.CRITICAL, detector.volume(current, history).state());
+        assertEquals(PaymentDetector.State.INSUFFICIENT_DATA,
+                detector.volume(current, history.subList(0,4)).state());
+        assertEquals(PaymentDetector.State.INSUFFICIENT_DATA,
+                detector.volume(current, java.util.List.of(current)).state());
+        var foreign = history.stream().map(m -> new MinuteMetric(m.bucket(), "EUR",100,100,0,
+                BigDecimal.TEN,BigDecimal.TEN,10)).toList();
+        assertEquals(PaymentDetector.State.INSUFFICIENT_DATA, detector.volume(current, foreign).state());
+    }
     static MinuteMetric metric(long total, long failed, String latency) {
         return new MinuteMetric(Instant.parse("2026-09-10T12:00:00Z"), "USD", total,
                 total-failed, failed, BigDecimal.TEN, new BigDecimal(latency), 5000);

@@ -26,6 +26,11 @@ Part 3 is in progress: explainable failure-rate and average-latency rules requir
 20 payments per minute/currency. Warning/critical thresholds are 20%/50% and
 1000/2000 ms, inclusive. These are demo settings, not calibrated production limits.
 
+Volume drop compares an observed minute with the median of qualifying minutes in
+the preceding ten minutes, for the same currency. Five baseline minutes with at
+least 20 payments each are required. At or below 50% is warning; 20% is critical.
+Missing minutes are unknown, so this rule does not detect a completely silent feed.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
