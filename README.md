@@ -36,6 +36,14 @@ Monitoring persists one evaluation per minute/currency/rule. It scans the latest
 The first alert time is retained even if a subsequent evaluation becomes normal.
 PostgreSQL serializes concurrent scans using a transaction-scoped advisory lock.
 
+With the pipeline profile, scans run automatically every 30 seconds (first scan
+after five seconds). `POST /api/monitoring/runs` triggers a scan;
+`GET /api/monitoring/status` reports this process's last scan, and
+`GET /api/monitoring/findings?includeResolved=true&limit=50` includes corrected
+historical findings. Default queries return warning/critical findings. These are
+historical bucket results, not a claim that an incident is still happening now.
+Use `monitoring.scheduling-enabled=false` to disable automatic scans.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven

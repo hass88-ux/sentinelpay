@@ -17,6 +17,10 @@ final class TestPipeline implements AutoCloseable {
     }
 
     TestPipeline(java.nio.file.Path dataDirectory, int port) throws Exception {
+        this(dataDirectory, port, false);
+    }
+
+    TestPipeline(java.nio.file.Path dataDirectory, int port, boolean monitoringEnabled) throws Exception {
         var builder = EmbeddedPostgres.builder().setServerConfig("listen_addresses", "127.0.0.1");
         if (dataDirectory != null) builder.setDataDirectory(dataDirectory).setCleanDataDirectory(false);
         postgres = builder.start();
@@ -29,6 +33,7 @@ final class TestPipeline implements AutoCloseable {
             application.setAdditionalProfiles("pipeline");
             application.setRegisterShutdownHook(false);
             context = application.run("--server.port=" + port, "--server.address=127.0.0.1",
+                    "--monitoring.scheduling-enabled=" + monitoringEnabled,
                     "--pipeline.bootstrap-servers=" + kafka.getBrokersAsString(),
                     "--pipeline.jdbc-url=" + postgres.getJdbcUrl("postgres", "postgres"),
                     "--pipeline.username=postgres", "--pipeline.password=postgres");

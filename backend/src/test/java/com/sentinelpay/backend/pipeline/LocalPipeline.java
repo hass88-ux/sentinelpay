@@ -27,7 +27,7 @@ public class LocalPipeline {
         try (var channel = FileChannel.open(local.resolve("pipeline.lock"), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                 var lock = channel.tryLock()) {
             if (lock == null) throw new IllegalStateException("A local pipeline already owns this database directory.");
-            try (var runtime = new TestPipeline(local.resolve("postgres"), port)) {
+            try (var runtime = new TestPipeline(local.resolve("postgres"), port, true)) {
                 var shutdown = new Thread(() -> {
                     try { runtime.close(); } catch (Exception ex) { System.err.println("Pipeline shutdown: " + ex.getMessage()); }
                 }, "local-pipeline-shutdown");
