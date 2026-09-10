@@ -70,6 +70,11 @@ same-currency buckets with at least 20 payments each and distinguishes insuffici
 data, unstable trends, existing threshold violations, and projected crossings.
 Historical R-squared is a fit measure, not a probability or accuracy claim.
 
+Incident cases group the rules for one minute/currency. Their stable IDs and first
+detection times survive re-evaluation; states are ALERT, CLEARED, or UNDETERMINED.
+Case updates and rule evaluations commit together. These are bounded investigation
+cases, not automatic correlation of a multi-minute production outage.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
