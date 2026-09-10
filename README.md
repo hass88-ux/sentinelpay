@@ -75,6 +75,12 @@ detection times survive re-evaluation; states are ALERT, CLEARED, or UNDETERMINE
 Case updates and rule evaluations commit together. These are bounded investigation
 cases, not automatic correlation of a multi-minute production outage.
 
+`GET /api/intelligence/incidents` lists cases; `GET /api/intelligence/incidents/{id}`
+returns evidence, forecasts, explicitly labeled hypotheses, and investigation
+checks. `GET /api/intelligence/forecasts?currency=USD` forecasts the latest eligible
+completed minute, even before an alert exists. Reports distinguish historical
+rule evidence from forecasts recalculated using currently stored metrics.
+
 - Java 21
 - Spring Boot 4.1.1
 - Maven
