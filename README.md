@@ -4,7 +4,7 @@ SentinelPay is a Java-first project working toward predictive monitoring and inc
 
 ## Current progress
 
-Parts 1 and 2 build the simulator and its opt-in streaming/storage pipeline. The backend currently includes:
+Parts 1–3 build the simulator, its opt-in streaming/storage pipeline, and explainable monitoring. The backend currently includes:
 
 - A Spring Boot application that runs on port 8080.
 - An immutable `TransactionEvent` record representing one completed simulated payment attempt.
@@ -17,12 +17,13 @@ Parts 1 and 2 build the simulator and its opt-in streaming/storage pipeline. The
 - JUnit coverage of the model, generator, settings, and Spring application startup.
 - Real Kafka delivery, PostgreSQL event storage, and atomic per-minute/currency metrics.
 - Pipeline HTTP publishing and queries, replay deduplication, dead letters, and recovery tests.
+- Scheduled failure-rate, latency, and volume detection with persistent findings and late-data correction.
 
-Continuous background generation, anomaly detection, prediction, AI explanations, and a frontend are planned features. The simulator runs through the console demo, HTTP preview, pipeline publishing API, or tests. It does not start a background producer on application startup.
+Continuous background generation, prediction, AI explanations, and a frontend are planned features. The simulator runs through the console demo, HTTP preview, pipeline publishing API, or tests. It does not start a background producer on application startup.
 
-## Current stack
+## Part 3 monitoring
 
-Part 3 is in progress: explainable failure-rate and average-latency rules require
+Explainable failure-rate and average-latency rules require
 20 payments per minute/currency. Warning/critical thresholds are 20%/50% and
 1000/2000 ms, inclusive. These are demo settings, not calibrated production limits.
 
@@ -49,6 +50,19 @@ baselines, advisory-lock contention, late-data correction, scan failure/recovery
 and a real Kafka/PostgreSQL/HTTP scenario with scheduled detection and restart.
 Run `backend/scripts/verify-part3.ps1` for the full suite and packaged application.
 Its temporary infrastructure uses random ports and data under `backend/target/`.
+
+Verified September 10, 2026 on Windows with Java 21: 96 tests passed, with zero
+failures, errors, or skips; Maven packaged the application successfully. The six
+Part 3 checkpoints are threshold rules, historical volume baseline, persisted
+evaluations, monitoring APIs/scheduling, recovery/integration verification, and
+the demo guide. This is functional verification, not a performance benchmark.
+
+See the [Part 3 demo guide](docs/part-3-demo.md) for restart instructions, sample
+commands, expected results, architecture, and limits. Late corrections outside the
+30-minute window require a future backfill feature. Findings are retained without
+an automatic retention policy.
+
+## Current stack
 
 - Java 21
 - Spring Boot 4.1.1
@@ -79,6 +93,13 @@ backend/
       PublishUnavailableException.java
       api/PipelineController.java
       api/PipelineErrorHandler.java
+    monitoring/
+      PaymentDetector.java
+      MonitoringStore.java
+      MonitoringService.java
+      MonitoringScheduler.java
+      MonitoringConfiguration.java
+      MonitoringController.java
     simulator/
       PaymentSimulator.java
       PaymentSimulatorDemo.java
@@ -94,6 +115,7 @@ backend/
     application.properties
     application-pipeline.properties
     db/migration/V1__payment_events_and_minute_metrics.sql
+    db/migration/V2__monitoring_evaluations.sql
   src/test/java/com/sentinelpay/backend/
     BackendApplicationTests.java
     transaction/TransactionEventTest.java
@@ -103,11 +125,14 @@ backend/
     simulator/PaymentSimulatorDemoTest.java
     simulator/SimulationApiTest.java
     pipeline/  # real Kafka/PostgreSQL tests and development launcher
+    monitoring/  # rule, storage, and scan recovery tests
   scripts/verify-part1.ps1
   scripts/start-part2.ps1
   scripts/verify-part2.ps1
+  scripts/verify-part3.ps1
 docs/part-1-demo.md
 docs/part-2-demo.md
+docs/part-3-demo.md
 ```
 
 The transaction package defines valid payment data. The simulator creates events without requiring Spring. The optional pipeline profile connects HTTP publishing to Kafka, a Java consumer, and PostgreSQL events/minute metrics. The default profile remains a standalone preview.
@@ -201,7 +226,7 @@ mvn test
 Expected result:
 
 ```text
-Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 96, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
 
@@ -250,7 +275,7 @@ For complete event replay in tests, the four-argument constructor also accepts a
 | --- | --- | --- |
 | 1 | Java transaction model, configurable simulator, console demo, HTTP preview, reliable build and tests (original Phase 1) | Complete for this checkpoint |
 | 2 | Kafka streaming, metric aggregation, PostgreSQL storage (original Phases 2–3; TimescaleDB extension deferred) | Complete for this checkpoint |
-| 3 | Monitoring and anomaly detection (original Phase 4) | Planned |
+| 3 | Monitoring and anomaly detection (original Phase 4) | Complete for this checkpoint |
 | 4 | Predictive incident model and AI-assisted investigation (original Phases 5–6) | Planned |
 | 5 | React UI, expanded observability and testing, Docker, AWS, and demo polish (original Phase 7 plus frontend) | Planned |
 
