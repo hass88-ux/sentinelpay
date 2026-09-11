@@ -151,6 +151,30 @@ behavior are tested against a local stub; actual narration quality and hardware
 latency remain unverified. Generated explanations are returned on demand and are
 not persisted as an audit history.
 
+## Ask about a case
+
+With the demo running and `$caseId` set as above:
+
+```powershell
+$body = @{ question = 'What changed before the spike?' } | ConvertTo-Json
+Invoke-RestMethod -Method Post "http://localhost:8082/api/intelligence/incidents/$caseId/questions" -ContentType 'application/json' -Body $body | ConvertTo-Json -Depth 12
+```
+
+Try `Why was this flagged?` or `What should I investigate next?` as well. The
+response includes the answer, mode, evidence references, recent observations, and
+the underlying report. Questions must contain 1–500 characters. Requests are
+independent: no conversation history is stored or sent, and the endpoint cannot
+retrieve other cases based on the text of a question.
+
+When AI is disabled or unavailable, basic questions receive a deterministic answer.
+Comparisons about before the incident exclude the incident minute itself. Unknown
+causes and unsupported questions are identified as such. With AI enabled, the
+question is passed as untrusted input alongside case evidence. References are
+validated, but that does not guarantee the model's claims are correct.
+
+The React question interface and free-hosted demo are planned next; AWS deployment
+is deferred until October. The current provider remains local Ollama.
+
 ## Verification
 
 ```powershell

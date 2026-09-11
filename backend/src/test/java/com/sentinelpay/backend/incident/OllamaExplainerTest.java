@@ -10,6 +10,25 @@ import static org.junit.jupiter.api.Assertions.*;
 import tools.jackson.databind.ObjectMapper;
 
 class OllamaExplainerTest {
+    @Test void questionIsSentAsDataAlongsideCaseEvidence() throws Exception {
+        var received=new java.util.concurrent.atomic.AtomicReference<String>();
+        server.createContext("/api/generate",exchange -> {
+            received.set(new String(exchange.getRequestBody().readAllBytes(),java.nio.charset.StandardCharsets.UTF_8));
+            var bytes=envelope("FAILURE_RATE").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200,bytes.length);
+            try(var output=exchange.getResponseBody()) { output.write(bytes); }
+        });
+        try(var client=new OllamaExplainer(true,"test-model",endpoint,Duration.ofSeconds(2),mapper)) {
+            var result=client.explain(report(),"Why was this flagged?",List.of());
+            assertEquals("AI_ASSISTED",result.mode());
+            var payload=mapper.readTree(received.get());
+            var facts=mapper.readTree(payload.get("prompt").asText());
+            assertEquals("Why was this flagged?",facts.get("question").asText());
+            assertEquals("FAILURE_RATE",facts.get("evidence").get(0).get("rule").asText());
+            assertFalse(facts.has("id"));
+            assertTrue(payload.get("system").asText().contains("untrusted input"));
+        }
+    }
     private final ObjectMapper mapper=new ObjectMapper();
     private HttpServer server;
     private URI endpoint;

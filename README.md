@@ -13,8 +13,9 @@ I built it as a follow-up to my Transaction Anomaly Detection Engine. That proje
 - Projects short-term trends and flags possible threshold crossings.
 - Groups related findings into incident cases with evidence and suggested investigation steps.
 - Supports optional Ollama explanations, with a built-in report available without a model.
+- Answers questions about a selected incident using its findings and recent observations.
 
-The backend and local demos are working. The React dashboard and deployment setup are next.
+The backend and local demos are working. The React dashboard and an initial deployment on free hosting are next. AWS is planned for October; a free host has not been selected yet.
 
 ## Try the demo
 
@@ -76,6 +77,13 @@ A linear regression over five consecutive minutes projects failure rate and aver
 Investigation reports keep observed facts separate from possible causes. They show the rule evidence, forecasts, and checks that could help explain the result. A case can clear when late data changes its underlying metrics, while retaining its ID and first detection time.
 
 Ollama support is optional and disabled by default. Model suggestions are returned separately from the evidence and cannot change metrics or case state. The adapter's HTTP behavior and fallback paths are tested; live model quality has not been evaluated. Setup details are in the [Part 4 guide](docs/part-4-demo.md#optional-ai-narration).
+
+You can also ask about a specific case: why it was flagged, what changed before it,
+or what to investigate next. Each request uses that case's evidence and recent
+observations. Without a model, supported questions receive a rule-based answer;
+other questions return the evidence report with an explanation of the limitation.
+Questions are independent, with no saved chat history. The dashboard control is
+still to be built.
 
 ## Stack
 
@@ -158,6 +166,7 @@ The pipeline, monitoring, and intelligence endpoints are available on the full l
 | GET | `/api/intelligence/incidents` | List incident cases |
 | GET | `/api/intelligence/incidents/{id}` | Read an investigation report |
 | POST | `/api/intelligence/incidents/{id}/explanation` | Request an optional model explanation |
+| POST | `/api/intelligence/incidents/{id}/questions` | Ask about one incident; JSON body with `question` (1–500 characters) |
 
 The demo guides cover query parameters, limits, and response examples.
 
@@ -167,7 +176,7 @@ The demo guides cover query parameters, limits, and response examples.
 .\scripts\verify-part4.ps1
 ```
 
-This runs the full test suite and packages the application. The suite currently has **109 tests**, covering simulation, event validation, duplicate delivery, database recovery, metric aggregation, detection rules, forecasts, incident corrections, and the AI adapter.
+This runs the full test suite and packages the application. Tests cover simulation, event validation, duplicate delivery, database recovery, metric aggregation, detection rules, forecasts, incident corrections, questions, and the AI adapter.
 
 Integration tests use real Kafka and PostgreSQL with isolated data and random ports. They also check that stored history and corrected incident cases survive a restart. Live model calls are disabled during tests.
 
@@ -203,7 +212,11 @@ docs/               Demo walkthroughs and implementation details
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
-| 5 | React dashboard, observability, Docker, and AWS | Planned |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Planned |
+
+AWS deployment follows in October. Hosting and model-provider limits will be
+checked before choosing the free setup; local Ollama support does not imply that
+a free web host can run a model.
 
 The current system is for local development. It has no authentication or rate limiting. Detection thresholds are demo settings, complete feed silence needs a separate check, and corrections older than the 30-minute scan window need a backfill feature. Multi-minute incident grouping, automatic retention, and TimescaleDB support are also still open.
 

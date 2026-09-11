@@ -31,6 +31,15 @@ class IncidentIntegrationTest {
             var explanation=request(runtime,"POST",path+"/explanation");
             assertEquals(200,explanation.statusCode());
             assertEquals("DETERMINISTIC",mapper.readTree(explanation.body()).get("mode").asText());
+            var answer=question(runtime,path,"{\"question\":\"Why was this flagged?\"}");
+            assertEquals(200,answer.statusCode());
+            assertEquals("no-store",answer.headers().firstValue("Cache-Control").orElseThrow());
+            assertEquals(3,mapper.readTree(answer.body()).get("evidenceRules").size());
+            assertEquals(400,question(runtime,path,"{}").statusCode());
+            assertEquals(400,question(runtime,path,"{\"question\":\"   \"}").statusCode());
+            assertEquals(400,question(runtime,path,mapper.writeValueAsString(java.util.Map.of("question","x".repeat(501)))).statusCode());
+            assertEquals(404,question(runtime,"/api/intelligence/incidents/00000000-0000-0000-0000-000000000000",
+                    "{\"question\":\"Why?\"}").statusCode());
             assertEquals(400,request(runtime,"GET","/api/intelligence/incidents?limit=101").statusCode());
             assertEquals(400,request(runtime,"GET","/api/intelligence/forecasts?currency=bad").statusCode());
             assertEquals(400,request(runtime,"GET","/api/intelligence/forecasts?asOf=2200-01-01T00:00:00Z").statusCode());
@@ -47,6 +56,14 @@ class IncidentIntegrationTest {
             return client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path))
                     .timeout(Duration.ofSeconds(35)).method(method,HttpRequest.BodyPublishers.noBody()).build(),
                     HttpResponse.BodyHandlers.ofString());
+        }
+    }
+    private HttpResponse<String> question(TestPipeline runtime,String path,String body) throws Exception {
+        String port=runtime.context.getEnvironment().getProperty("local.server.port");
+        try(var client=HttpClient.newHttpClient()) {
+            return client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path+"/questions"))
+                    .timeout(Duration.ofSeconds(35)).header("Content-Type","application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString());
         }
     }
 }

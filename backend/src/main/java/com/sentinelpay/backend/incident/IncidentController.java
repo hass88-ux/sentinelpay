@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Profile("pipeline")
 @RequestMapping("/api/intelligence")
 public class IncidentController {
+    public record QuestionRequest(String question) {}
     private final IncidentStore store;
     private final OllamaExplainer explainer;
     public IncidentController(IncidentStore store, OllamaExplainer explainer) {
@@ -23,6 +24,13 @@ public class IncidentController {
     @PostMapping("/incidents/{id}/explanation")
     public ResponseEntity<OllamaExplainer.Explanation> explain(@PathVariable UUID id) {
         return response(explainer.explain(investigate(id)));
+    }
+
+    @PostMapping("/incidents/{id}/questions")
+    public ResponseEntity<IncidentQuestions.Answer> question(@PathVariable UUID id, @RequestBody QuestionRequest request) {
+        var question = IncidentQuestions.validate(request == null ? null : request.question());
+        var snapshot = store.snapshot(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Incident case not found"));
+        return response(new IncidentQuestions().answer(snapshot, question, explainer));
     }
 
     @GetMapping("/incidents")
