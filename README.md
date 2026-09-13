@@ -32,6 +32,8 @@ npm run dev
 
 Open `http://127.0.0.1:5173`. **Overview** shows observed metrics and a historical forecast. **Transactions** filters the latest 100 stored attempts. **Incidents** opens the findings, investigation steps, and saved answers for a selected case.
 
+The dashboard uses the Night Shift design: charcoal surfaces, amber charts, compact metric summaries, and critical evidence beside the main chart. The same views adapt to narrow screens.
+
 The saved demo works without Java. To use fresh data locally, start the Java demo below, then choose **Live pipeline** in the dashboard. The development server forwards API requests to port 8082. Publishing traffic acknowledges Kafka delivery; refresh after storage catches up, and scan once the minute is eligible for monitoring.
 
 The hosted demo uses saved data only. It does not run Kafka, PostgreSQL, or a language model, and it does not accept live simulation commands. New incident questions require the local backend; suggested demo answers were recorded by its rule-based question handler.
