@@ -2,7 +2,7 @@
 
 The React UI has three views: payment health, recent transactions, and incident investigation. Its default source is a saved export from the Java demo. This makes the walkthrough available without running services or paying for backend hosting.
 
-[Open the hosted demo](https://sentinelpay-monitor.w61983961.chatgpt.site). Access is currently private to the owner's account. It is not yet a public portfolio link.
+[Open the hosted demo](https://sentinelpay-monitor.w61983961.chatgpt.site). Anyone with the link can view the saved demo without signing in.
 
 ## Run locally
 

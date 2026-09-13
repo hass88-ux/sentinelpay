@@ -19,7 +19,7 @@ The backend and local demos are working. Part 5 adds a React dashboard, starting
 
 ## Try the demo
 
-[Open the dashboard demo](https://sentinelpay-monitor.w61983961.chatgpt.site) — currently private to the owner's account. It shows saved synthetic results; the live Java backend remains local.
+[Open the dashboard demo](https://sentinelpay-monitor.w61983961.chatgpt.site) — publicly accessible without signing in. It shows saved synthetic results; the live Java backend remains local.
 
 The dashboard's saved dataset comes from the Java incident demo running through real local Kafka and PostgreSQL. To regenerate it, run `./backend/scripts/export-dashboard.ps1` from the repository root. This creates isolated temporary services, exports synthetic results, and shuts those services down.
 
@@ -233,7 +233,7 @@ docs/               Demo walkthroughs and implementation details
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard privately hosted; observability, Docker, and live backend hosting still open |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard publicly hosted; observability, Docker, and live backend hosting still open |
 
 AWS deployment follows in October. The initial hosted dashboard is a static demo.
 Backend hosting and model-provider limits still need evaluation; local Ollama
