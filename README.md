@@ -187,6 +187,10 @@ The demo guides cover query parameters, limits, and response examples.
 
 ## Tests
 
+From the repository root, `npm test` checks dashboard data handling and `npm run build` creates the static UI in `dist/`. See the [dashboard walkthrough](docs/part-5-dashboard.md) for browser checks and demo limitations.
+
+For the backend, from `backend/`:
+
 ```powershell
 .\scripts\verify-part4.ps1
 ```
@@ -241,3 +245,4 @@ The current system is for local development. It has no authentication or rate li
 - [Kafka pipeline and storage](docs/part-2-demo.md)
 - [Monitoring rules and findings](docs/part-3-demo.md)
 - [Forecasts and incident investigation](docs/part-4-demo.md)
+- [Dashboard and saved demo](docs/part-5-dashboard.md)
