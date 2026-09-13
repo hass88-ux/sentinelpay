@@ -19,6 +19,8 @@ The backend and local demos are working. Part 5 adds a React dashboard, starting
 
 ## Try the demo
 
+[Open the dashboard demo](https://sentinelpay-monitor.w61983961.chatgpt.site) — currently private to the owner's account. It shows saved synthetic results; the live Java backend remains local.
+
 The dashboard's saved dataset comes from the Java incident demo running through real local Kafka and PostgreSQL. To regenerate it, run `./backend/scripts/export-dashboard.ps1` from the repository root. This creates isolated temporary services, exports synthetic results, and shuts those services down.
 
 For the dashboard, install Node.js 22.12 or newer and run from the repository root:
@@ -231,11 +233,11 @@ docs/               Demo walkthroughs and implementation details
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard implemented; hosting in progress; observability and Docker still open |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard privately hosted; observability, Docker, and live backend hosting still open |
 
-AWS deployment follows in October. Hosting and model-provider limits will be
-checked before choosing the free setup; local Ollama support does not imply that
-a free web host can run a model.
+AWS deployment follows in October. The initial hosted dashboard is a static demo.
+Backend hosting and model-provider limits still need evaluation; local Ollama
+support does not imply that a free web host can run a model.
 
 The current system is for local development. It has no authentication or rate limiting. Detection thresholds are demo settings, complete feed silence needs a separate check, and corrections older than the 30-minute scan window need a backfill feature. Multi-minute incident grouping, automatic retention, and TimescaleDB support are also still open.
 

@@ -2,6 +2,8 @@
 
 The React UI has three views: payment health, recent transactions, and incident investigation. Its default source is a saved export from the Java demo. This makes the walkthrough available without running services or paying for backend hosting.
 
+[Open the hosted demo](https://sentinelpay-monitor.w61983961.chatgpt.site). Access is currently private to the owner's account. It is not yet a public portfolio link.
+
 ## Run locally
 
 From the repository root, with Node.js 22.12 or newer:
@@ -40,5 +42,7 @@ npm run build
 ```
 
 Frontend tests cover weighted metrics, missing data, separate currencies, timeline gaps, case-specific saved answers, API errors, invalid responses, and request timeouts. Browser checks cover navigation, transaction filtering, saved questions, unsupported questions, and desktop/mobile layout.
+
+The dashboard release passed 7 frontend tests and the full 113-test backend suite, with no failures or skipped backend tests. The production frontend build also passed. Browser checks confirmed that the local source can load existing backend data and leaves missing metric windows empty. Generating live payments from the dashboard was not part of this saved-demo validation.
 
 The hosted build is static. Java services, live AI hosting, expanded observability, and Docker verification remain separate work in Part 5. AWS deployment remains planned for October.
