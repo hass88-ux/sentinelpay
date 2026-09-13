@@ -1,0 +1,1327 @@
+{
+  "capturedAt" : "2026-09-13T17:28:01.022268100Z",
+  "source" : "Java-generated synthetic fixture through Kafka and PostgreSQL",
+  "metrics" : [ {
+    "bucket" : "2026-09-13T17:25:00Z",
+    "currency" : "USD",
+    "totalCount" : 20,
+    "successCount" : 2,
+    "failedCount" : 18,
+    "totalAmount" : 20,
+    "averageLatencyMs" : 2500.000,
+    "maxLatencyMs" : 2500
+  }, {
+    "bucket" : "2026-09-13T17:24:00Z",
+    "currency" : "USD",
+    "totalCount" : 100,
+    "successCount" : 84,
+    "failedCount" : 16,
+    "totalAmount" : 100,
+    "averageLatencyMs" : 800.000,
+    "maxLatencyMs" : 800
+  }, {
+    "bucket" : "2026-09-13T17:23:00Z",
+    "currency" : "USD",
+    "totalCount" : 100,
+    "successCount" : 88,
+    "failedCount" : 12,
+    "totalAmount" : 100,
+    "averageLatencyMs" : 650.000,
+    "maxLatencyMs" : 650
+  }, {
+    "bucket" : "2026-09-13T17:22:00Z",
+    "currency" : "USD",
+    "totalCount" : 100,
+    "successCount" : 92,
+    "failedCount" : 8,
+    "totalAmount" : 100,
+    "averageLatencyMs" : 500.000,
+    "maxLatencyMs" : 500
+  }, {
+    "bucket" : "2026-09-13T17:21:00Z",
+    "currency" : "USD",
+    "totalCount" : 100,
+    "successCount" : 96,
+    "failedCount" : 4,
+    "totalAmount" : 100,
+    "averageLatencyMs" : 350.000,
+    "maxLatencyMs" : 350
+  }, {
+    "bucket" : "2026-09-13T17:20:00Z",
+    "currency" : "USD",
+    "totalCount" : 100,
+    "successCount" : 100,
+    "failedCount" : 0,
+    "totalAmount" : 100,
+    "averageLatencyMs" : 200.000,
+    "maxLatencyMs" : 200
+  } ],
+  "cases" : [ {
+    "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+    "bucket" : "2026-09-13T17:25:00Z",
+    "currency" : "USD",
+    "state" : "ALERT",
+    "severity" : "CRITICAL",
+    "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+    "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+  } ],
+  "reports" : {
+    "ae10f917-2e17-71d0-5480-0299fa496413" : {
+      "generatedAt" : "2026-09-13T17:28:01.004975900Z",
+      "incident" : {
+        "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+        "bucket" : "2026-09-13T17:25:00Z",
+        "currency" : "USD",
+        "state" : "ALERT",
+        "severity" : "CRITICAL",
+        "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+        "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+      },
+      "summary" : "USD payment case for 2026-09-13T17:25:00Z is ALERT with CRITICAL severity; 3 rules currently alert.",
+      "evidence" : [ {
+        "rule" : "AVERAGE_LATENCY",
+        "state" : "CRITICAL",
+        "sampleCount" : 20,
+        "observed" : 2500.000,
+        "warningThreshold" : 1000,
+        "criticalThreshold" : 2000,
+        "explanation" : "Average latency in milliseconds; requires at least 20 payments."
+      }, {
+        "rule" : "FAILURE_RATE",
+        "state" : "CRITICAL",
+        "sampleCount" : 20,
+        "observed" : 90.000,
+        "warningThreshold" : 20,
+        "criticalThreshold" : 50,
+        "explanation" : "Failed attempts as percent of all attempts; requires at least 20 payments."
+      }, {
+        "rule" : "VOLUME_DROP",
+        "state" : "CRITICAL",
+        "sampleCount" : 20,
+        "observed" : 20,
+        "warningThreshold" : 50.0,
+        "criticalThreshold" : 20.0,
+        "explanation" : "Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero."
+      } ],
+      "forecasts" : [ {
+        "signal" : "FAILURE_RATE",
+        "state" : "ALREADY_ELEVATED",
+        "asOf" : "2026-09-13T17:25:00Z",
+        "horizonMinutes" : 3,
+        "currentValue" : 90.0,
+        "projectedValue" : 100.0,
+        "changePerMinute" : 18.0,
+        "fitRSquared" : 0.6230769230769231,
+        "warningThreshold" : 20.0,
+        "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+      }, {
+        "signal" : "AVERAGE_LATENCY",
+        "state" : "ALREADY_ELEVATED",
+        "asOf" : "2026-09-13T17:25:00Z",
+        "horizonMinutes" : 3,
+        "currentValue" : 2500.0,
+        "projectedValue" : 3260.0,
+        "changePerMinute" : 460.0,
+        "fitRSquared" : 0.6876828079298017,
+        "warningThreshold" : 1000.0,
+        "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+      } ],
+      "hypotheses" : [ {
+        "suggestion" : "Processing delays may be contributing; these aggregate metrics cannot identify the slow dependency.",
+        "evidenceRules" : [ "AVERAGE_LATENCY" ]
+      }, {
+        "suggestion" : "Payment rejection or processing errors may be contributing; error codes are needed to distinguish them.",
+        "evidenceRules" : [ "FAILURE_RATE" ]
+      }, {
+        "suggestion" : "Reduced demand or interrupted event delivery could explain the volume change; neither is established by this signal.",
+        "evidenceRules" : [ "VOLUME_DROP" ]
+      } ],
+      "nextChecks" : [ "Compare dependency timings and queue depth with the affected minute.", "Inspect failure codes and compare affected processors for this minute.", "Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand." ],
+      "limitations" : [ "This case describes a historical minute, not necessarily a currently active outage.", "Root cause is unknown. Suggested causes require independent evidence.", "Rule evidence is from the recorded evaluation time. Forecasts use currently stored metrics through the case minute; rerun monitoring after late arrivals.", "Forecasts are an uncalibrated linear baseline, not incident probabilities." ]
+    }
+  },
+  "transactions" : [ {
+    "id" : "06fc1f6e-2544-4940-9e6b-2ebd43154146",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "12d781a2-9596-4e6a-bff4-12992b4a46b6",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "1f45a9e3-f0b8-4ce9-8d76-fcfb4bcb0e72",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 2500
+  }, {
+    "id" : "28d88774-2044-4aed-b211-696d65d3e48c",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "2ad4269c-9ba4-44f8-b047-203dba96ce25",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "3fa440e1-2bb2-4ec7-ad58-f12be2b60863",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "40bca7eb-91e7-4977-b4c2-4f0516f40501",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "48697b73-d581-4453-945c-f2b41afad525",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "495947c6-f7e2-48c1-89d0-a6685133b3ac",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "4da9eaf4-d08d-4d2b-be86-b34d3b14b84c",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "77d28d10-0cec-4d4e-9e98-6400c902c0db",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "7de5c129-6fcb-4980-89a7-2e6f89c0de6d",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "84958108-f7b4-4d44-af42-4bc07eee2307",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "99b26852-2b4d-4449-b411-1c32cdaa4384",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 2500
+  }, {
+    "id" : "a1dde22b-47ca-4dc3-91c1-98b2dbb8a774",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "cd5aeed2-f645-49e8-bd52-3f5a6209d767",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "ea3c0b38-402f-4c64-9c9e-e8ce21ccf00b",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "f0a84a45-9e5c-4b20-a303-f3cad6d2f3e8",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "f777ac4f-20bd-4ae6-89e4-dd41c09f83f2",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "f8a536c9-10f3-437f-9306-b3627c8ae06d",
+    "timestamp" : "2026-09-13T17:25:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 2500
+  }, {
+    "id" : "01b52ee3-445c-4d91-8aa3-6e0bc7cff229",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "02c30157-287f-4c6a-ad58-61842945a82f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "04a26206-2e64-41e5-bb8b-22c3d25b83eb",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "053f5ad0-a987-409a-93aa-a74068a5238d",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "0cef99e6-20f5-4108-b574-595029b501b3",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "0fa483ab-2007-4eb7-a607-8854ff8e8d93",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "10050c66-51d2-46cd-a5dc-cc7da92c4275",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "1e9dbe08-4a2f-481a-b901-a94c461c07d3",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "20cfdce5-2ff8-4c53-8ecf-7e87fa34739a",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "23b5c0c9-8b81-4cbc-8c8d-2e5012818679",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "25ee19d7-faca-4e0c-a0ab-2cd45099121f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "26fb1ff3-78a9-464b-9c51-acab6e2f823c",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "2a2ac48c-7503-4daf-a756-e5422cbd80b9",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "2e6097ff-61bb-437c-aa52-1a55514403ee",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "323d46ab-b139-47b7-a991-29f569e1d963",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "34d741e2-112f-4e39-86e8-61727d7693af",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "37370e45-ba4d-44d5-892e-edc665d0ce45",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "3f28f7f6-d4c1-4a4a-8474-3acac9e00d36",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "40c82476-e9c4-4a83-8151-d56224c9b620",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "41256764-805f-46ac-8df5-7fca6fa185cf",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "44a0c55a-82dd-44f9-967a-e83653133a2e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "47d6a18f-95d6-4f75-8f18-673494813078",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "47f939b3-be0d-4d14-8e1b-afd91ffe9acb",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "4841a5b7-a150-474d-9379-a8228dfea3fe",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "48545468-11ac-4404-884a-1e9efcd8ce15",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "49b71d1f-1754-4c9f-95fb-4882c4b1bb43",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "541d3fb4-7614-4ed6-bc9e-2db2deaa86ba",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "5661532a-750c-462a-8c28-08a5f654be30",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "572477b6-d95e-483b-8b1b-55dc9b9dce8f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "5a29d4d7-0020-4b5a-af21-f926aedfc00c",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "5f53fa09-4295-49eb-b7e8-de9b08466144",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "5f96685a-05ca-48db-84d8-d04c8bc6df4c",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "63046879-96a0-4a20-be76-b07a1e51cc40",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "64095a97-a132-4663-8c55-1c3c6beb0983",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "671a18c7-a83c-446a-9945-788265e4cbfe",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "68e63bac-49cf-4ccf-8e02-501616b2c7f4",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "6a41b38e-2901-432c-b264-bda13b3c3a59",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "6af54cb8-bd78-450d-8e34-9d571dcbfe4b",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "6b9b4656-a060-4df5-99e4-daaa6b357be0",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "6e4ef5cf-1d85-409a-9aaa-25b7f5bc66d5",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "72c09d44-2dc7-4531-9ef7-6e2b51b74bf1",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "765ae5cb-4de4-4257-8145-4d5097bd4f5d",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "77809766-9208-4881-b225-e987dc91ea65",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "78e62d16-a0eb-44cb-8e28-f87e0db84f5a",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "7c31986b-3ede-4cfc-b496-9175b206b68e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "7ea16ae5-ff1e-489a-9bd6-4b13bf5fb595",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "808125fa-1d6a-4583-8a26-5aa6489891e4",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "82f4e9ae-d7ab-4aa7-b13c-4055c499502c",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "8699a400-73b1-45e5-a048-e3c156f82aa1",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "91cc45b6-9e9e-4d33-823e-722f16dc93f5",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "9baf2f21-a1bd-4887-a522-6c58e82d931f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "9f56ac4e-99e2-4afa-bd60-a45a785f5975",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "a19851d8-4bc2-48ea-840f-148d1015d8d4",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "a40ad1df-530a-487d-b67a-0c1f893db3da",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "a4fc9376-17a7-47ab-bc74-3801b8c9cbda",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "a6ae7769-c2e9-47a8-95a8-b39d7d14b04a",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "a908fa32-5869-47c0-9973-655fe68c30a8",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "aa64ce17-8d2b-40a5-b0f1-9e2bc2edf0aa",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "ac4db11b-04d2-4504-9fe8-0dea90d82232",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "af934a20-3dbe-4ff6-bca3-2db395480588",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b30468e5-b66b-434b-8e18-cfafba4bc83e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b4f47729-ba75-400b-b698-3856f2e55402",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b684cc49-fb88-41e4-bfa0-3e1ac96d522f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "b6aa4875-8088-4816-b953-3a5515ca340f",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b6ac0a97-2af2-4979-890c-1da94e9f32c3",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "b76b1021-e98f-47c2-9472-e28d00a1dc23",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b7b8f7a7-d846-401f-a02d-a6530987438e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "b8b93fe0-c02c-4ea9-b000-3250b89914a2",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "ba013b5c-94d3-4b09-8951-e2685095bf2d",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "bdb8198d-3ec5-440e-b383-ee77f58f73bd",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "c2aaf162-db48-45e6-8131-3dd9d3217583",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "c93ce64f-58ba-40c6-b630-a97b9b1f3b78",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "ccda5856-1410-45e5-84eb-87222bf4c31d",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "cd9d3e1a-869a-4a3b-b699-140aac74c1ad",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "FAILED",
+    "latencyMs" : 800
+  }, {
+    "id" : "d0896dbb-b53c-41cd-a51f-4f74fa8232ac",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "d71657a5-9e4f-49e1-8b2f-796312cb8ed3",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "d98bc4b9-6e48-4413-9ef9-4afe02c2766e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "dbdf355c-f252-4f60-96ff-108ad734981a",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "dc935920-b9fb-4247-9390-57ace699506e",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  }, {
+    "id" : "de2e8814-af07-4bff-9335-dc4f339b08d3",
+    "timestamp" : "2026-09-13T17:24:00Z",
+    "amount" : 1,
+    "currency" : "USD",
+    "status" : "SUCCESS",
+    "latencyMs" : 800
+  } ],
+  "questions" : {
+    "ae10f917-2e17-71d0-5480-0299fa496413" : {
+      "Why was this flagged?" : {
+        "question" : "Why was this flagged?",
+        "mode" : "DETERMINISTIC",
+        "answer" : "AVERAGE_LATENCY is CRITICAL: observed 2500.000, warning threshold 1000, critical threshold 2000. Average latency in milliseconds; requires at least 20 payments. FAILURE_RATE is CRITICAL: observed 90.000, warning threshold 20, critical threshold 50. Failed attempts as percent of all attempts; requires at least 20 payments. VOLUME_DROP is CRITICAL: observed 20, warning threshold 50.0, critical threshold 20.0. Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero.",
+        "evidenceRules" : [ "AVERAGE_LATENCY", "FAILURE_RATE", "VOLUME_DROP" ],
+        "observations" : [ {
+          "bucket" : "2026-09-13T17:21:00Z",
+          "totalCount" : 100,
+          "failedCount" : 4,
+          "averageLatencyMs" : 350.000
+        }, {
+          "bucket" : "2026-09-13T17:22:00Z",
+          "totalCount" : 100,
+          "failedCount" : 8,
+          "averageLatencyMs" : 500.000
+        }, {
+          "bucket" : "2026-09-13T17:23:00Z",
+          "totalCount" : 100,
+          "failedCount" : 12,
+          "averageLatencyMs" : 650.000
+        }, {
+          "bucket" : "2026-09-13T17:24:00Z",
+          "totalCount" : 100,
+          "failedCount" : 16,
+          "averageLatencyMs" : 800.000
+        }, {
+          "bucket" : "2026-09-13T17:25:00Z",
+          "totalCount" : 20,
+          "failedCount" : 18,
+          "averageLatencyMs" : 2500.000
+        } ],
+        "explanation" : {
+          "mode" : "DETERMINISTIC",
+          "model" : null,
+          "notice" : "AI DISABLED; deterministic evidence report remains available.",
+          "report" : {
+            "generatedAt" : "2026-09-13T17:28:01.005634600Z",
+            "incident" : {
+              "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+              "bucket" : "2026-09-13T17:25:00Z",
+              "currency" : "USD",
+              "state" : "ALERT",
+              "severity" : "CRITICAL",
+              "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+              "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+            },
+            "summary" : "USD payment case for 2026-09-13T17:25:00Z is ALERT with CRITICAL severity; 3 rules currently alert.",
+            "evidence" : [ {
+              "rule" : "AVERAGE_LATENCY",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 2500.000,
+              "warningThreshold" : 1000,
+              "criticalThreshold" : 2000,
+              "explanation" : "Average latency in milliseconds; requires at least 20 payments."
+            }, {
+              "rule" : "FAILURE_RATE",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 90.000,
+              "warningThreshold" : 20,
+              "criticalThreshold" : 50,
+              "explanation" : "Failed attempts as percent of all attempts; requires at least 20 payments."
+            }, {
+              "rule" : "VOLUME_DROP",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 20,
+              "warningThreshold" : 50.0,
+              "criticalThreshold" : 20.0,
+              "explanation" : "Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero."
+            } ],
+            "forecasts" : [ {
+              "signal" : "FAILURE_RATE",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 90.0,
+              "projectedValue" : 100.0,
+              "changePerMinute" : 18.0,
+              "fitRSquared" : 0.6230769230769231,
+              "warningThreshold" : 20.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            }, {
+              "signal" : "AVERAGE_LATENCY",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 2500.0,
+              "projectedValue" : 3260.0,
+              "changePerMinute" : 460.0,
+              "fitRSquared" : 0.6876828079298017,
+              "warningThreshold" : 1000.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            } ],
+            "hypotheses" : [ {
+              "suggestion" : "Processing delays may be contributing; these aggregate metrics cannot identify the slow dependency.",
+              "evidenceRules" : [ "AVERAGE_LATENCY" ]
+            }, {
+              "suggestion" : "Payment rejection or processing errors may be contributing; error codes are needed to distinguish them.",
+              "evidenceRules" : [ "FAILURE_RATE" ]
+            }, {
+              "suggestion" : "Reduced demand or interrupted event delivery could explain the volume change; neither is established by this signal.",
+              "evidenceRules" : [ "VOLUME_DROP" ]
+            } ],
+            "nextChecks" : [ "Compare dependency timings and queue depth with the affected minute.", "Inspect failure codes and compare affected processors for this minute.", "Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand." ],
+            "limitations" : [ "This case describes a historical minute, not necessarily a currently active outage.", "Root cause is unknown. Suggested causes require independent evidence.", "Rule evidence is from the recorded evaluation time. Forecasts use currently stored metrics through the case minute; rerun monitoring after late arrivals.", "Forecasts are an uncalibrated linear baseline, not incident probabilities." ]
+          },
+          "aiSuggestion" : null
+        }
+      },
+      "What changed before the spike?" : {
+        "question" : "What changed before the spike?",
+        "mode" : "DETERMINISTIC",
+        "answer" : "Before the case minute, the available observations run from 2026-09-13T17:21:00Z to 2026-09-13T17:24:00Z. Average latency changed from 350.000 to 800.000 ms; failures changed from 4/100 to 16/100 payments. See observations for gaps and intermediate values; this comparison does not establish a cause.",
+        "evidenceRules" : [ "AVERAGE_LATENCY", "FAILURE_RATE" ],
+        "observations" : [ {
+          "bucket" : "2026-09-13T17:21:00Z",
+          "totalCount" : 100,
+          "failedCount" : 4,
+          "averageLatencyMs" : 350.000
+        }, {
+          "bucket" : "2026-09-13T17:22:00Z",
+          "totalCount" : 100,
+          "failedCount" : 8,
+          "averageLatencyMs" : 500.000
+        }, {
+          "bucket" : "2026-09-13T17:23:00Z",
+          "totalCount" : 100,
+          "failedCount" : 12,
+          "averageLatencyMs" : 650.000
+        }, {
+          "bucket" : "2026-09-13T17:24:00Z",
+          "totalCount" : 100,
+          "failedCount" : 16,
+          "averageLatencyMs" : 800.000
+        }, {
+          "bucket" : "2026-09-13T17:25:00Z",
+          "totalCount" : 20,
+          "failedCount" : 18,
+          "averageLatencyMs" : 2500.000
+        } ],
+        "explanation" : {
+          "mode" : "DETERMINISTIC",
+          "model" : null,
+          "notice" : "AI DISABLED; deterministic evidence report remains available.",
+          "report" : {
+            "generatedAt" : "2026-09-13T17:28:01.015911Z",
+            "incident" : {
+              "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+              "bucket" : "2026-09-13T17:25:00Z",
+              "currency" : "USD",
+              "state" : "ALERT",
+              "severity" : "CRITICAL",
+              "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+              "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+            },
+            "summary" : "USD payment case for 2026-09-13T17:25:00Z is ALERT with CRITICAL severity; 3 rules currently alert.",
+            "evidence" : [ {
+              "rule" : "AVERAGE_LATENCY",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 2500.000,
+              "warningThreshold" : 1000,
+              "criticalThreshold" : 2000,
+              "explanation" : "Average latency in milliseconds; requires at least 20 payments."
+            }, {
+              "rule" : "FAILURE_RATE",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 90.000,
+              "warningThreshold" : 20,
+              "criticalThreshold" : 50,
+              "explanation" : "Failed attempts as percent of all attempts; requires at least 20 payments."
+            }, {
+              "rule" : "VOLUME_DROP",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 20,
+              "warningThreshold" : 50.0,
+              "criticalThreshold" : 20.0,
+              "explanation" : "Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero."
+            } ],
+            "forecasts" : [ {
+              "signal" : "FAILURE_RATE",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 90.0,
+              "projectedValue" : 100.0,
+              "changePerMinute" : 18.0,
+              "fitRSquared" : 0.6230769230769231,
+              "warningThreshold" : 20.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            }, {
+              "signal" : "AVERAGE_LATENCY",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 2500.0,
+              "projectedValue" : 3260.0,
+              "changePerMinute" : 460.0,
+              "fitRSquared" : 0.6876828079298017,
+              "warningThreshold" : 1000.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            } ],
+            "hypotheses" : [ {
+              "suggestion" : "Processing delays may be contributing; these aggregate metrics cannot identify the slow dependency.",
+              "evidenceRules" : [ "AVERAGE_LATENCY" ]
+            }, {
+              "suggestion" : "Payment rejection or processing errors may be contributing; error codes are needed to distinguish them.",
+              "evidenceRules" : [ "FAILURE_RATE" ]
+            }, {
+              "suggestion" : "Reduced demand or interrupted event delivery could explain the volume change; neither is established by this signal.",
+              "evidenceRules" : [ "VOLUME_DROP" ]
+            } ],
+            "nextChecks" : [ "Compare dependency timings and queue depth with the affected minute.", "Inspect failure codes and compare affected processors for this minute.", "Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand." ],
+            "limitations" : [ "This case describes a historical minute, not necessarily a currently active outage.", "Root cause is unknown. Suggested causes require independent evidence.", "Rule evidence is from the recorded evaluation time. Forecasts use currently stored metrics through the case minute; rerun monitoring after late arrivals.", "Forecasts are an uncalibrated linear baseline, not incident probabilities." ]
+          },
+          "aiSuggestion" : null
+        }
+      },
+      "What should I investigate next?" : {
+        "question" : "What should I investigate next?",
+        "mode" : "DETERMINISTIC",
+        "answer" : "Compare dependency timings and queue depth with the affected minute. Inspect failure codes and compare affected processors for this minute. Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand.",
+        "evidenceRules" : [ "AVERAGE_LATENCY", "FAILURE_RATE", "VOLUME_DROP" ],
+        "observations" : [ {
+          "bucket" : "2026-09-13T17:21:00Z",
+          "totalCount" : 100,
+          "failedCount" : 4,
+          "averageLatencyMs" : 350.000
+        }, {
+          "bucket" : "2026-09-13T17:22:00Z",
+          "totalCount" : 100,
+          "failedCount" : 8,
+          "averageLatencyMs" : 500.000
+        }, {
+          "bucket" : "2026-09-13T17:23:00Z",
+          "totalCount" : 100,
+          "failedCount" : 12,
+          "averageLatencyMs" : 650.000
+        }, {
+          "bucket" : "2026-09-13T17:24:00Z",
+          "totalCount" : 100,
+          "failedCount" : 16,
+          "averageLatencyMs" : 800.000
+        }, {
+          "bucket" : "2026-09-13T17:25:00Z",
+          "totalCount" : 20,
+          "failedCount" : 18,
+          "averageLatencyMs" : 2500.000
+        } ],
+        "explanation" : {
+          "mode" : "DETERMINISTIC",
+          "model" : null,
+          "notice" : "AI DISABLED; deterministic evidence report remains available.",
+          "report" : {
+            "generatedAt" : "2026-09-13T17:28:01.019981900Z",
+            "incident" : {
+              "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+              "bucket" : "2026-09-13T17:25:00Z",
+              "currency" : "USD",
+              "state" : "ALERT",
+              "severity" : "CRITICAL",
+              "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+              "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+            },
+            "summary" : "USD payment case for 2026-09-13T17:25:00Z is ALERT with CRITICAL severity; 3 rules currently alert.",
+            "evidence" : [ {
+              "rule" : "AVERAGE_LATENCY",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 2500.000,
+              "warningThreshold" : 1000,
+              "criticalThreshold" : 2000,
+              "explanation" : "Average latency in milliseconds; requires at least 20 payments."
+            }, {
+              "rule" : "FAILURE_RATE",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 90.000,
+              "warningThreshold" : 20,
+              "criticalThreshold" : 50,
+              "explanation" : "Failed attempts as percent of all attempts; requires at least 20 payments."
+            }, {
+              "rule" : "VOLUME_DROP",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 20,
+              "warningThreshold" : 50.0,
+              "criticalThreshold" : 20.0,
+              "explanation" : "Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero."
+            } ],
+            "forecasts" : [ {
+              "signal" : "FAILURE_RATE",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 90.0,
+              "projectedValue" : 100.0,
+              "changePerMinute" : 18.0,
+              "fitRSquared" : 0.6230769230769231,
+              "warningThreshold" : 20.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            }, {
+              "signal" : "AVERAGE_LATENCY",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 2500.0,
+              "projectedValue" : 3260.0,
+              "changePerMinute" : 460.0,
+              "fitRSquared" : 0.6876828079298017,
+              "warningThreshold" : 1000.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            } ],
+            "hypotheses" : [ {
+              "suggestion" : "Processing delays may be contributing; these aggregate metrics cannot identify the slow dependency.",
+              "evidenceRules" : [ "AVERAGE_LATENCY" ]
+            }, {
+              "suggestion" : "Payment rejection or processing errors may be contributing; error codes are needed to distinguish them.",
+              "evidenceRules" : [ "FAILURE_RATE" ]
+            }, {
+              "suggestion" : "Reduced demand or interrupted event delivery could explain the volume change; neither is established by this signal.",
+              "evidenceRules" : [ "VOLUME_DROP" ]
+            } ],
+            "nextChecks" : [ "Compare dependency timings and queue depth with the affected minute.", "Inspect failure codes and compare affected processors for this minute.", "Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand." ],
+            "limitations" : [ "This case describes a historical minute, not necessarily a currently active outage.", "Root cause is unknown. Suggested causes require independent evidence.", "Rule evidence is from the recorded evaluation time. Forecasts use currently stored metrics through the case minute; rerun monitoring after late arrivals.", "Forecasts are an uncalibrated linear baseline, not incident probabilities." ]
+          },
+          "aiSuggestion" : null
+        }
+      },
+      "What caused this incident?" : {
+        "question" : "What caused this incident?",
+        "mode" : "DETERMINISTIC",
+        "answer" : "The root cause is unknown. These aggregate metrics cannot establish which dependency or processor caused the change. Compare dependency timings and queue depth with the affected minute. Inspect failure codes and compare affected processors for this minute. Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand.",
+        "evidenceRules" : [ ],
+        "observations" : [ {
+          "bucket" : "2026-09-13T17:21:00Z",
+          "totalCount" : 100,
+          "failedCount" : 4,
+          "averageLatencyMs" : 350.000
+        }, {
+          "bucket" : "2026-09-13T17:22:00Z",
+          "totalCount" : 100,
+          "failedCount" : 8,
+          "averageLatencyMs" : 500.000
+        }, {
+          "bucket" : "2026-09-13T17:23:00Z",
+          "totalCount" : 100,
+          "failedCount" : 12,
+          "averageLatencyMs" : 650.000
+        }, {
+          "bucket" : "2026-09-13T17:24:00Z",
+          "totalCount" : 100,
+          "failedCount" : 16,
+          "averageLatencyMs" : 800.000
+        }, {
+          "bucket" : "2026-09-13T17:25:00Z",
+          "totalCount" : 20,
+          "failedCount" : 18,
+          "averageLatencyMs" : 2500.000
+        } ],
+        "explanation" : {
+          "mode" : "DETERMINISTIC",
+          "model" : null,
+          "notice" : "AI DISABLED; deterministic evidence report remains available.",
+          "report" : {
+            "generatedAt" : "2026-09-13T17:28:01.022268100Z",
+            "incident" : {
+              "id" : "ae10f917-2e17-71d0-5480-0299fa496413",
+              "bucket" : "2026-09-13T17:25:00Z",
+              "currency" : "USD",
+              "state" : "ALERT",
+              "severity" : "CRITICAL",
+              "firstDetectedAt" : "2026-09-13T17:28:00.954580Z",
+              "evaluatedAt" : "2026-09-13T17:28:00.954580Z"
+            },
+            "summary" : "USD payment case for 2026-09-13T17:25:00Z is ALERT with CRITICAL severity; 3 rules currently alert.",
+            "evidence" : [ {
+              "rule" : "AVERAGE_LATENCY",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 2500.000,
+              "warningThreshold" : 1000,
+              "criticalThreshold" : 2000,
+              "explanation" : "Average latency in milliseconds; requires at least 20 payments."
+            }, {
+              "rule" : "FAILURE_RATE",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 90.000,
+              "warningThreshold" : 20,
+              "criticalThreshold" : 50,
+              "explanation" : "Failed attempts as percent of all attempts; requires at least 20 payments."
+            }, {
+              "rule" : "VOLUME_DROP",
+              "state" : "CRITICAL",
+              "sampleCount" : 20,
+              "observed" : 20,
+              "warningThreshold" : 50.0,
+              "criticalThreshold" : 20.0,
+              "explanation" : "Volume at or below 50%/20% of preceding median 100 across 5 qualifying minutes. Missing minutes are not assumed to be zero."
+            } ],
+            "forecasts" : [ {
+              "signal" : "FAILURE_RATE",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 90.0,
+              "projectedValue" : 100.0,
+              "changePerMinute" : 18.0,
+              "fitRSquared" : 0.6230769230769231,
+              "warningThreshold" : 20.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            }, {
+              "signal" : "AVERAGE_LATENCY",
+              "state" : "ALREADY_ELEVATED",
+              "asOf" : "2026-09-13T17:25:00Z",
+              "horizonMinutes" : 3,
+              "currentValue" : 2500.0,
+              "projectedValue" : 3260.0,
+              "changePerMinute" : 460.0,
+              "fitRSquared" : 0.6876828079298017,
+              "warningThreshold" : 1000.0,
+              "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+            } ],
+            "hypotheses" : [ {
+              "suggestion" : "Processing delays may be contributing; these aggregate metrics cannot identify the slow dependency.",
+              "evidenceRules" : [ "AVERAGE_LATENCY" ]
+            }, {
+              "suggestion" : "Payment rejection or processing errors may be contributing; error codes are needed to distinguish them.",
+              "evidenceRules" : [ "FAILURE_RATE" ]
+            }, {
+              "suggestion" : "Reduced demand or interrupted event delivery could explain the volume change; neither is established by this signal.",
+              "evidenceRules" : [ "VOLUME_DROP" ]
+            } ],
+            "nextChecks" : [ "Compare dependency timings and queue depth with the affected minute.", "Inspect failure codes and compare affected processors for this minute.", "Compare upstream traffic counts with Kafka consumer lag before attributing the drop to demand." ],
+            "limitations" : [ "This case describes a historical minute, not necessarily a currently active outage.", "Root cause is unknown. Suggested causes require independent evidence.", "Rule evidence is from the recorded evaluation time. Forecasts use currently stored metrics through the case minute; rerun monitoring after late arrivals.", "Forecasts are an uncalibrated linear baseline, not incident probabilities." ]
+          },
+          "aiSuggestion" : null
+        }
+      }
+    }
+  },
+  "forecasts" : [ {
+    "signal" : "FAILURE_RATE",
+    "state" : "THRESHOLD_RISK",
+    "asOf" : "2026-09-13T17:24:00Z",
+    "horizonMinutes" : 3,
+    "currentValue" : 16.0,
+    "projectedValue" : 28.0,
+    "changePerMinute" : 4.0,
+    "fitRSquared" : 1.0,
+    "warningThreshold" : 20.0,
+    "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+  }, {
+    "signal" : "AVERAGE_LATENCY",
+    "state" : "THRESHOLD_RISK",
+    "asOf" : "2026-09-13T17:24:00Z",
+    "horizonMinutes" : 3,
+    "currentValue" : 800.0,
+    "projectedValue" : 1250.0,
+    "changePerMinute" : 150.0,
+    "fitRSquared" : 1.0,
+    "warningThreshold" : 1000.0,
+    "explanation" : "Linear extrapolation three minutes beyond the latest of five observations. R-squared measures historical fit, not confidence or incident probability; trend changes can invalidate the projection."
+  } ],
+  "monitoring" : {
+    "state" : "COMPLETED",
+    "lastSuccessfulRun" : {
+      "state" : "COMPLETED",
+      "evaluatedAt" : "2026-09-13T17:28:00.954580400Z",
+      "exclusiveCutoff" : "2026-09-13T17:27:00Z",
+      "observedMinutes" : 6,
+      "alertEvaluations" : 3,
+      "insufficientEvaluations" : 5
+    },
+    "lastFailureAt" : null
+  }
+}

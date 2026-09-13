@@ -15,13 +15,11 @@ I built it as a follow-up to my Transaction Anomaly Detection Engine. That proje
 - Supports optional Ollama explanations, with a built-in report available without a model.
 - Answers questions about a selected incident using its findings and recent observations.
 
-The backend and local demos are working. The React dashboard and an initial deployment on free hosting are next. AWS is planned for October; a free host has not been selected yet.
+The backend and local demos are working. Part 5 adds a React dashboard, starting with a hosted demo of saved synthetic results. The live backend still runs locally. AWS is planned for October.
 
 ## Try the demo
 
-The React dashboard is being added in Part 5. Run `npm install` and `npm run dev`
-from the repository root for the local UI. It opens with an explicitly labeled
-saved demo; the Java pipeline remains a separate process.
+The dashboard's saved dataset comes from the Java incident demo running through real local Kafka and PostgreSQL. To regenerate it, run `./backend/scripts/export-dashboard.ps1` from the repository root. This creates isolated temporary services, exports synthetic results, and shuts those services down.
 
 You'll need **JDK 21** on your PATH. The Maven wrapper downloads Maven and project dependencies on first use. The local launchers use PowerShell and have been tested on Windows.
 

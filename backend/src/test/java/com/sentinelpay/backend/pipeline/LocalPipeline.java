@@ -16,6 +16,10 @@ import tools.jackson.databind.ObjectMapper;
 /** Development-only launcher. Real services run locally; nothing is installed system-wide. */
 public class LocalPipeline {
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && args[0].equals("--export-dashboard")) {
+            DashboardExport.export();
+            return;
+        }
         if (args.length == 1 && args[0].equals("--verify")) {
             verify();
             return;
