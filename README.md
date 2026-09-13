@@ -21,6 +21,19 @@ The backend and local demos are working. Part 5 adds a React dashboard, starting
 
 The dashboard's saved dataset comes from the Java incident demo running through real local Kafka and PostgreSQL. To regenerate it, run `./backend/scripts/export-dashboard.ps1` from the repository root. This creates isolated temporary services, exports synthetic results, and shuts those services down.
 
+For the dashboard, install Node.js 22.12 or newer and run from the repository root:
+
+```powershell
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. **Overview** shows observed metrics and a historical forecast. **Transactions** filters the latest 100 stored attempts. **Incidents** opens the findings, investigation steps, and saved answers for a selected case.
+
+The saved demo works without Java. To use fresh data locally, start the Java demo below, then choose **Live pipeline** in the dashboard. The development server forwards API requests to port 8082. Publishing traffic acknowledges Kafka delivery; refresh after storage catches up, and scan once the minute is eligible for monitoring.
+
+The hosted demo uses saved data only. It does not run Kafka, PostgreSQL, or a language model, and it does not accept live simulation commands. New incident questions require the local backend; suggested demo answers were recorded by its rule-based question handler.
+
 You'll need **JDK 21** on your PATH. The Maven wrapper downloads Maven and project dependencies on first use. The local launchers use PowerShell and have been tested on Windows.
 
 From the repository root:
@@ -214,7 +227,7 @@ docs/               Demo walkthroughs and implementation details
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Planned |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard implemented; hosting in progress; observability and Docker still open |
 
 AWS deployment follows in October. Hosting and model-provider limits will be
 checked before choosing the free setup; local Ollama support does not imply that
