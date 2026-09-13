@@ -1,0 +1,23 @@
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { sample } from './sample';
+import './styles.css';
+
+const time = value => new Date(value).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',timeZone:'UTC'});
+function App() {
+  const [view,setView] = useState('Overview');
+  const metrics=sample.metrics;
+  return <div className="app"><aside className="sidebar"><a className="brand" href="#"><img src="/favicon.svg" alt=""/>SentinelPay</a>
+    <div className="workspace">PAYMENT OPERATIONS</div><nav aria-label="Main navigation">{['Overview','Transactions','Incidents'].map((name,i)=><button key={name} className={view===name?'active':''} onClick={()=>setView(name)}><span aria-hidden="true">{['◫','⇄','◇'][i]}</span>{name}</button>)}</nav>
+    <div className="sidebar-footer"><span className="system-mark">SP</span><div>Development workspace<small>Java · Kafka · PostgreSQL</small></div></div></aside>
+    <main><header><div className="breadcrumb">Workspace <span>/</span> {view}</div><span className="source-badge">Saved demo</span></header>
+    <div className="page"><div className="title-row"><div><p className="eyebrow">SYSTEM OVERVIEW</p><h1>Payment health</h1><p className="muted">Follow the signal. Understand the incident.</p></div><button className="button">↻ Refresh</button></div>
+    <div className="demo-banner"><strong>Demo dataset</strong><span>A synthetic rising trend followed by a payment spike. No live traffic.</span><span className="mono">USD · UTC</span></div>
+    <section className="stats" aria-label="Payment summary">{[['Payments','520','6 observed minutes'],['Failure rate','11.2%','58 failed attempts'],['Average latency','577 ms','Weighted across attempts'],['Incident cases','1','1 critical case']].map(([label,value,note])=><article className="stat" key={label}><span>{label}</span><strong>{value}</strong><small>{note}</small></article>)}</section>
+    <div className="overview-grid"><section className="panel chart-panel"><div className="panel-heading"><div><h2>Latency over time</h2><p className="muted">Average processing time per minute</p></div><span className="legend"><i/>Average latency</span></div>
+    <div className="chart"><svg viewBox="0 0 660 240" role="img" aria-label="Synthetic latency rises from 200 to 2500 milliseconds"><defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#16a58d" stopOpacity=".2"/><stop offset="1" stopColor="#16a58d" stopOpacity="0"/></linearGradient></defs>{[0,1000,2000,3000].map(n=><g key={n}><line x1="48" x2="635" y1={205-n/16} y2={205-n/16} stroke="#e7ecf2"/><text x="0" y={209-n/16}>{n.toLocaleString()}</text></g>)}<line x1="48" x2="635" y1="142.5" y2="142.5" stroke="#d89435" strokeDasharray="5 5"/><path d={`M 48 205 ${metrics.map((m,i)=>`L ${48+i*117} ${205-m.averageLatencyMs/16}`).join(' ')} L 633 205 Z`} fill="url(#area)"/><polyline points={metrics.map((m,i)=>`${48+i*117},${205-m.averageLatencyMs/16}`).join(' ')} fill="none" stroke="#159b85" strokeWidth="3" strokeLinejoin="round"/>{metrics.map((m,i)=><g key={m.bucket}><circle cx={48+i*117} cy={205-m.averageLatencyMs/16} r="4" fill="#159b85"/><text x={48+i*117} y="233" textAnchor="middle">{time(m.bucket)}</text></g>)}</svg></div><div className="chart-foot"><span><i className="warning-line"/>Warning threshold · 1,000 ms</span><span>6 minutes · UTC</span></div></section>
+    <section className="panel forecast"><p className="eyebrow">EARLY SIGNAL</p><div className="risk-label">Threshold crossing projected</div><h2>A rising trend before<br/>the spike.</h2><p>Five observed minutes project elevated latency within the next three minutes.</p><div className="projection"><strong>1,250 <small>ms</small></strong><span>projected average latency</span></div><div className="forecast-footer">Linear baseline · Historical sample<br/>A projection, not an incident probability.</div></section></div>
+    <section className="panel incidents"><div className="panel-heading"><div><h2>Incident inbox <span className="count">1</span></h2><p className="muted">Related findings, grouped by minute and currency</p></div><span className="muted">Latest observed cases</span></div><button className="incident-row" onClick={()=>setView('Incidents')}><span className="severity critical">Critical</span><div><strong>Payment degradation</strong><small>Failure rate, latency & volume · USD</small></div><span className="incident-time">12:05 UTC</span><span className="case-state">Alert</span><span aria-hidden="true">→</span></button></section>
+    <footer>SentinelPay <span>Evidence first. Root cause requires investigation.</span></footer></div></main></div>;
+}
+createRoot(document.getElementById('root')).render(<App/>);

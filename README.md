@@ -19,6 +19,10 @@ The backend and local demos are working. The React dashboard and an initial depl
 
 ## Try the demo
 
+The React dashboard is being added in Part 5. Run `npm install` and `npm run dev`
+from the repository root for the local UI. It opens with an explicitly labeled
+saved demo; the Java pipeline remains a separate process.
+
 You'll need **JDK 21** on your PATH. The Maven wrapper downloads Maven and project dependencies on first use. The local launchers use PowerShell and have been tested on Windows.
 
 From the repository root:
