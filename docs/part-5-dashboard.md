@@ -23,7 +23,7 @@ For live local data, leave `backend/scripts/start-part4.ps1` running in another 
 2. Compare the historical forecast, calculated before the spike, with the observed spike. Its linear fit describes the historical samples; it is not an incident probability.
 3. In **Transactions**, filter by status or search a payment ID. The table contains the latest 100 returned attempts, so its filtered count differs from the overall metric total.
 4. In **Incidents**, open the critical case. Read the observed values, thresholds, and investigation steps.
-5. Choose a suggested question. The demo replays the corresponding backend answer. Other questions receive a demo limitation message, not an invented answer.
+5. With **Live AI (Groq)** selected, ask a question about the case. The server sends its aggregate evidence and your question to the model and checks the returned citations. Switch to **Saved backend answers** to replay recorded Java answers without calling AI. Saved mode only supports its recorded questions.
 
 ## Refresh the saved data
 
@@ -45,4 +45,4 @@ Frontend tests cover weighted metrics, missing data, separate currencies, timeli
 
 The dashboard release passed 7 frontend tests and the full 113-test backend suite, with no failures or skipped backend tests. The production frontend build also passed. Browser checks confirmed that the local source can load existing backend data and leaves missing metric windows empty. Generating live payments from the dashboard was not part of this saved-demo validation.
 
-The hosted build is static. Java services, live AI hosting, expanded observability, and Docker verification remain separate work in Part 5. AWS deployment remains planned for October.
+The hosted build now includes a small AI server alongside the React assets. The Java pipeline remains local. Expanded observability and Docker verification remain open in Part 5; AWS remains planned for October. See [hosted AI](hosted-ai.md) for setup, limits, and evaluation details.

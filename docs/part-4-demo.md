@@ -172,8 +172,7 @@ causes and unsupported questions are identified as such. With AI enabled, the
 question is passed as untrusted input alongside case evidence. References are
 validated, but that does not guarantee the model's claims are correct.
 
-The React question interface and free-hosted demo are planned next; AWS deployment
-is deferred until October. The current provider remains local Ollama.
+The React question interface and public demo are now available. The Java provider remains local Ollama; the public demo has a separate [Groq AI endpoint](hosted-ai.md) for saved synthetic cases. AWS deployment is deferred until October.
 
 ## Verification
 

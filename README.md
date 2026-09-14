@@ -36,7 +36,7 @@ The dashboard uses the Night Shift design: charcoal surfaces, amber charts, comp
 
 The saved demo works without Java. To use fresh data locally, start the Java demo below, then choose **Live pipeline** in the dashboard. The development server forwards API requests to port 8082. Publishing traffic acknowledges Kafka delivery; refresh after storage catches up, and scan once the minute is eligible for monitoring.
 
-The hosted demo uses saved data only. It does not run Kafka, PostgreSQL, or a language model, and it does not accept live simulation commands. New incident questions require the local backend; suggested demo answers were recorded by its rule-based question handler.
+The hosted demo combines saved synthetic payment data with live AI answers from Groq. In **Incidents**, open a case, leave **Answer source** on **Live AI (Groq)**, and ask a question. You can switch to **Saved backend answers** without using a model. Kafka and PostgreSQL still run locally; the website does not accept live simulation commands.
 
 You'll need **JDK 21** on your PATH. The Maven wrapper downloads Maven and project dependencies on first use. The local launchers use PowerShell and have been tested on Windows.
 
@@ -95,7 +95,7 @@ A linear regression over five consecutive minutes projects failure rate and aver
 
 Investigation reports keep observed facts separate from possible causes. They show the rule evidence, forecasts, and checks that could help explain the result. A case can clear when late data changes its underlying metrics, while retaining its ID and first detection time.
 
-Ollama support is optional and disabled by default. Model suggestions are returned separately from the evidence and cannot change metrics or case state. The adapter's HTTP behavior and fallback paths are tested; live model quality has not been evaluated. Setup details are in the [Part 4 guide](docs/part-4-demo.md#optional-ai-narration).
+Local Ollama support is optional and disabled by default. Model suggestions are returned separately from the evidence and cannot change metrics or case state. Its HTTP behavior and fallback paths are tested; local Ollama model quality has not been evaluated. Setup details are in the [Part 4 guide](docs/part-4-demo.md#optional-ai-narration). The hosted demo uses Groq separately, with a small live evaluation described in the [AI guide](docs/hosted-ai.md).
 
 You can also ask about a specific case: why it was flagged, what changed before it,
 or what to investigate next. Each request uses that case's evidence and recent
@@ -191,7 +191,7 @@ The demo guides cover query parameters, limits, and response examples.
 
 ## Tests
 
-From the repository root, `npm test` checks dashboard data handling and `npm run build` creates the static UI in `dist/`. See the [dashboard walkthrough](docs/part-5-dashboard.md) for browser checks and demo limitations.
+From the repository root, `npm test` checks dashboard data handling and the hosted AI endpoint. `npm run build` creates the React assets in `dist/client/` and the server in `dist/server/`. `node scripts/check-build.mjs` checks that the built server serves the app and its assets. See the [dashboard walkthrough](docs/part-5-dashboard.md) for demo limitations.
 
 For the backend, from `backend/`:
 
@@ -237,11 +237,9 @@ docs/               Demo walkthroughs and implementation details
 | 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
 | 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard publicly hosted; observability, Docker, and live backend hosting still open |
 
-AWS deployment follows in October. The initial hosted dashboard is a static demo.
-Backend hosting and model-provider limits still need evaluation; local Ollama
-support does not imply that a free web host can run a model.
+AWS deployment follows in October. The hosted dashboard uses saved Java-generated data and calls Groq for AI answers. The live Java pipeline still needs a hosting provider. Groq free-tier quotas apply; the website does not host model weights.
 
-The current system is for local development. It has no authentication or rate limiting. Detection thresholds are demo settings, complete feed silence needs a separate check, and corrections older than the 30-minute scan window need a backfill feature. Multi-minute incident grouping, automatic retention, and TimescaleDB support are also still open.
+The Java pipeline is for local development and has no authentication or rate limiting. The public AI endpoint has best-effort request limits; it is not a production abuse-prevention system. Detection thresholds are demo settings, complete feed silence needs a separate check, and corrections older than the 30-minute scan window need a backfill feature. Multi-minute incident grouping, automatic retention, and TimescaleDB support are also still open.
 
 ## Guides
 
