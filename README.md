@@ -234,8 +234,8 @@ docs/               Demo walkthroughs and implementation details
 | 1 | Transaction model and payment simulator | Implemented |
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
-| 4 | Trend forecasts and incident investigation | Implemented; live AI evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Dashboard publicly hosted; observability, Docker, and live backend hosting still open |
+| 4 | Trend forecasts and incident investigation | Implemented; local Ollama evaluation remains open |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Public dashboard and live Groq answers working; observability, Docker, and live backend hosting still open |
 
 AWS deployment follows in October. The hosted dashboard uses saved Java-generated data and calls Groq for AI answers. The live Java pipeline still needs a hosting provider. Groq free-tier quotas apply; the website does not host model weights.
 

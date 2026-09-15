@@ -39,4 +39,6 @@ The last command makes real model calls using the encrypted local key. It evalua
 
 These are a small demonstration sample, not an accuracy benchmark or a comprehensive prompt-injection evaluation. Review the numbers, time windows, citations, and causal language. A schema-valid answer can still be misleading; the Java evidence remains visible for comparison.
 
+The release passed 21 frontend/server tests and the built-server checks. A question sent through the deployed public endpoint returned `AI_ASSISTED`, with the correct pre-spike comparison and an explicit statement that the cause was unknown. This verifies the hosted path as well as the direct provider integration.
+
 In the initial live review, the model preserved root-cause uncertainty, correctly compared pre-spike latency of 200–800 ms and failure rates of 0–16%, and did not follow the request to fabricate a provider and logs. Review also caught imprecise wording around volume thresholds, so the prompt now explains that volume breaches a lower threshold and bucket timestamps mark minute starts. This does not guarantee that future wording will be correct.
