@@ -229,7 +229,7 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
-Private accounts and CSV uploads are the next extension. The [CSV validator](docs/transaction-upload-format.md) is implemented, but user uploads are not enabled on the public site yet. Each user's history must be isolated before the upload UI is connected.
+Private accounts and CSV uploads are the next extension. The [CSV validator and owner-scoped storage](docs/transaction-upload-format.md) are implemented and tested, but user uploads are not enabled on the public site yet. Authentication and the hosted Java API still need to be connected.
 
 | Part | Focus | Status |
 | --- | --- | --- |
