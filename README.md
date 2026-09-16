@@ -229,6 +229,8 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
+Private accounts and CSV uploads are the next extension. The [CSV validator](docs/transaction-upload-format.md) is implemented, but user uploads are not enabled on the public site yet. Each user's history must be isolated before the upload UI is connected.
+
 | Part | Focus | Status |
 | --- | --- | --- |
 | 1 | Transaction model and payment simulator | Implemented |
