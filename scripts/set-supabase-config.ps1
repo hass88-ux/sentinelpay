@@ -21,7 +21,7 @@ try {
     $payload = @{
         projectUrl = $projectUrl
         publishableKey = $publishable
-        jdbcUrl = "jdbc:postgresql://${poolerHost}:5432/postgres?sslmode=verify-full&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory"
+        jdbcUrl = "jdbc:postgresql://${poolerHost}:5432/postgres?sslmode=verify-full"
         databaseUsername = "postgres.$projectReference"
         databasePassword = $credential.GetNetworkCredential().Password
     } | ConvertTo-Json -Compress
@@ -31,6 +31,8 @@ try {
     $payloadSecret | ConvertFrom-SecureString | Set-Content -LiteralPath (Join-Path $directory 'supabase-config.dpapi') -Encoding ASCII
     Write-Host 'Supabase configuration saved encrypted. Tell Codex: Supabase config saved.'
     Write-Host 'This saves local configuration only; it does not enable public uploads yet.'
+    Write-Host 'Next: download the database CA certificate from Supabase Database Settings > SSL Configuration.'
+    Write-Host 'Run scripts/verify-supabase.ps1 -CertificatePath <downloaded certificate path> to check the connection.'
 } finally {
     $password.Dispose()
     if ($null -ne $payloadSecret) { $payloadSecret.Dispose() }

@@ -231,6 +231,8 @@ docs/               Demo walkthroughs and implementation details
 
 Private accounts and CSV uploads are the next extension. The [CSV validator and owner-scoped storage](docs/transaction-upload-format.md) are implemented and tested, but user uploads are not enabled on the public site yet. Authentication and the hosted Java API still need to be connected.
 
+The [Supabase setup instructions](docs/transaction-upload-format.md#private-storage) include a read-only connection check using the project's database CA certificate.
+
 | Part | Focus | Status |
 | --- | --- | --- |
 | 1 | Transaction model and payment simulator | Implemented |

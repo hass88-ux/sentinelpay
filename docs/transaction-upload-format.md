@@ -29,6 +29,14 @@ The owner must come from a verified login token, never from a submitted form fie
 
 Supabase setup uses `scripts/set-supabase-config.ps1`. It stores the publishable key and database details in a Windows DPAPI-encrypted file under ignored `.sites-runtime/`. No service-role key is needed for the browser. Use Supabase's session pooler connection for the Java service; the pooler supports IPv4.
 
+Download the database CA certificate from **Database Settings > SSL Configuration** in the Supabase dashboard. From the repository root, check the saved connection with:
+
+```powershell
+.\scripts\verify-supabase.ps1 -CertificatePath "$env:USERPROFILE\Downloads\prod-ca-2021.crt"
+```
+
+Use the actual downloaded filename if it differs. The check uses `sslmode=verify-full` with the supplied CA, runs only `SELECT 1`, and does not migrate or modify the database. It also supports configuration saved by the earlier setup helper; there is no need to re-enter the keys or password. Credentials stay out of command arguments and output. A successful connection check does not enable sign-in or public uploads.
+
 The two example rows show the format only. They are not enough to satisfy the monitoring rules' sample requirements or build a five-minute forecast. A successful import must not imply that enough evidence exists for a useful analysis.
 
 Run the parser tests from `backend/`:
