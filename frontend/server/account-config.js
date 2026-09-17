@@ -4,6 +4,6 @@ export function accountConfig(env) {
   try {
     const auth=new URL(supabaseUrl),api=new URL(apiBase);
     if(auth.protocol!=='https:'||api.protocol!=='https:'||!auth.hostname.endsWith('.supabase.co')||!publishableKey.startsWith('sb_publishable_'))return {enabled:false};
-    return {enabled:true,supabaseUrl:auth.origin,publishableKey,apiBase:api.origin,emailAuthReady:env.EMAIL_AUTH_READY==='true'};
+    return {enabled:true,supabaseUrl:auth.origin,publishableKey,apiBase:api.origin,emailAuthReady:env.EMAIL_AUTH_READY==='true',googleAuthReady:env.GOOGLE_AUTH_READY==='true'};
   }catch{return {enabled:false}}
 }

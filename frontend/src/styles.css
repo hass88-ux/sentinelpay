@@ -26,3 +26,4 @@ select,input,textarea,.button{color:var(--text);background:var(--panel);border-c
 .account-links{display:flex;flex-wrap:wrap;gap:1rem}.upload-form{display:grid;gap:1rem}.upload-form pre{overflow:auto;font-size:.875rem}
 .upload-list{padding:0;list-style:none}.upload-list li{display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid #333;flex-wrap:wrap}.upload-list li span{flex:1;color:#aab0ba}.upload-checks{max-height:480px;overflow:auto}.upload-checks>div{padding:1rem 0;border-bottom:1px solid #333}
 [hidden]{display:none!important}
+.google-signin{background:#fff!important;color:#202124!important;border:1px solid #747775!important;font-weight:600;min-height:44px}.google-signin:disabled{opacity:.55}

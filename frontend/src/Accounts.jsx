@@ -3,6 +3,7 @@ import {createClient} from '@supabase/supabase-js';
 import Chart from './Chart';
 import {summary} from './data';
 import {uploadRequest} from './uploads';
+import {startGoogleSignIn} from './google-auth';
 
 export default function Accounts() {
   const [client,setClient]=useState(null),[config,setConfig]=useState(null),[session,setSession]=useState(null);
@@ -17,13 +18,16 @@ export default function Accounts() {
       if(abort.signal.aborted)return;
       if(!c.enabled)throw new Error('Private accounts are being connected. The demo is still available.');
       setConfig(c);
-      auth=createClient(c.supabaseUrl,c.publishableKey,{auth:{persistSession:true,storage:window.sessionStorage}});
+      auth=createClient(c.supabaseUrl,c.publishableKey,{auth:{flowType:'pkce',persistSession:true,storage:window.sessionStorage}});
       setClient(auth);
       subscription=auth.auth.onAuthStateChange((event,s)=>{
         if(currentOwner.current!==s?.user.id){generation.current++;setAnalysis(null);setFiles([]);setPendingDelete(null);setBusy(false);currentOwner.current=s?.user.id;}
         setSession(s);
         if(event==='PASSWORD_RECOVERY')setMode('newpassword');
       }).data.subscription;
+      // The SDK exchanges the returned PKCE code automatically and removes it from the URL.
+      auth.auth.getSession().then(({error})=>{if(error&&!abort.signal.aborted)setError('Sign-in did not finish. Please try again in this browser tab.');})
+        .catch(()=>{if(!abort.signal.aborted)setError('Sign-in did not finish. Please try again.');});
     }).catch(e=>{if(!abort.signal.aborted)setError(e.message)});
     return()=>{abort.abort();subscription?.unsubscribe();auth?.auth.stopAutoRefresh();generation.current++};
   },[]);
@@ -52,6 +56,11 @@ export default function Accounts() {
       if(mode==='newpassword')setMode('signin');
     } catch(e){setError(e.message)} finally{setBusy(false)}
   }
+  async function googleSignIn() {
+    setBusy(true);setError('');setMessage('');
+    try {await startGoogleSignIn(client,location.origin)}
+    catch(e){setError(e.message);setBusy(false)}
+  }
   async function act(task) {
     const revision=generation.current;setBusy(true);setError('');setMessage('');
     try {await task(revision)} catch(e){if(revision===generation.current)setError(e.message)} finally{if(revision===generation.current)setBusy(false)}
@@ -64,11 +73,13 @@ export default function Accounts() {
     {!client&&!error&&<p role="status">Connecting to accounts…</p>}
     {client&&(!session||mode==='newpassword')&&<form className="panel account-form" onSubmit={authenticate}>
       <h2>{mode==='signup'?'Create your account':mode==='reset'?'Reset password':mode==='newpassword'?'Choose a new password':'Sign in'}</h2>
+      {mode==='signin'&&<><button type="button" className="button google-signin" disabled={busy||!config.googleAuthReady} onClick={googleSignIn}>{busy?'Connecting…':'Continue with Google'}</button>
+      <p className="muted">{config.googleAuthReady?'New here? Google sign-in creates your private account.':'Google sign-in is being connected.'}</p><span className="muted">Or sign in with an existing email account</span></>}
       {mode!=='newpassword'&&<label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label>}
       {mode!=='reset'&&<label>Password<input type="password" autoComplete={mode==='signin'?'current-password':'new-password'} minLength={mode==='signin'?1:12} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)}/></label>}
       {['signup','newpassword'].includes(mode)&&<p className="muted">Use at least 12 characters.</p>}
       <button className="button primary" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':mode==='reset'?'Send reset link':mode==='newpassword'?'Save password':'Sign in'}</button>
-      {!config.emailAuthReady&&<p className="muted">Sign-in is available for existing accounts. New registration and password-reset emails are not available yet.</p>}
+      {!config.emailAuthReady&&<p className="muted">Email/password registration and password-reset emails are not available yet.</p>}
       <div className="account-links">{(config.emailAuthReady?['signin','signup','reset']:['signin']).filter(m=>m!==mode).map(m=><button type="button" className="text-button" key={m} onClick={()=>{setMode(m);setPassword('');setError('');setMessage('')}}>{m==='signin'?'Sign in':m==='signup'?'Create account':'Forgot password?'}</button>)}</div>
     </form>}
     {session&&mode!=='newpassword'&&<><p className="muted">Signed in as {session.user.email}</p><form className="panel upload-form" onSubmit={e=>{e.preventDefault();if(!file)return;act(async revision=>{
