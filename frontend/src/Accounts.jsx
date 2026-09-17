@@ -10,6 +10,7 @@ export default function Accounts() {
   const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[mode,setMode]=useState('signin');
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
   const [files,setFiles]=useState([]),[analysis,setAnalysis]=useState(null),[currency,setCurrency]=useState('USD');
+  const [filesState,setFilesState]=useState('loading');
   const [pendingDelete,setPendingDelete]=useState(null),[file,setFile]=useState(null);
   const generation=useRef(0), fileInput=useRef(null), currentOwner=useRef(null);
   useEffect(()=>{
@@ -21,7 +22,7 @@ export default function Accounts() {
       auth=createClient(c.supabaseUrl,c.publishableKey,{auth:{flowType:'pkce',persistSession:true,storage:window.sessionStorage}});
       setClient(auth);
       subscription=auth.auth.onAuthStateChange((event,s)=>{
-        if(currentOwner.current!==s?.user.id){generation.current++;setAnalysis(null);setFiles([]);setPendingDelete(null);setBusy(false);currentOwner.current=s?.user.id;}
+        if(currentOwner.current!==s?.user.id){generation.current++;setAnalysis(null);setFiles([]);setFilesState('loading');setPendingDelete(null);setBusy(false);currentOwner.current=s?.user.id;}
         setSession(s);
         if(event==='PASSWORD_RECOVERY')setMode('newpassword');
       }).data.subscription;
@@ -39,7 +40,11 @@ export default function Accounts() {
   useEffect(()=>{
     if(!session||!client)return;
     const revision=generation.current;
-    api().then(f=>{if(revision===generation.current)setFiles(f)}).catch(e=>{if(revision===generation.current)setError(e.message)});
+    let active=true;
+    setFilesState('loading');
+    api().then(f=>{if(active&&revision===generation.current){setFiles(f);setFilesState('ready')}})
+      .catch(e=>{if(active&&revision===generation.current){setError(e.message);setFilesState('error')}});
+    return()=>{active=false};
   },[session,client]);
   async function authenticate(e) {
     e.preventDefault();setBusy(true);setError('');setMessage('');
@@ -86,13 +91,17 @@ export default function Accounts() {
       if(file.size>2*1024*1024)throw new Error('Choose a CSV of 2 MiB or less.');
       const body=new FormData();body.append('file',file);const saved=await api('',{method:'POST',body});
       const [list,a]=await Promise.all([api(),api('/'+saved.id)]);if(revision!==generation.current)return;
-      setFiles(list);setAnalysis(a);setCurrency(a.metrics[0]?.currency??'USD');setFile(null);fileInput.current.value='';setMessage('Upload saved.');
+      setFiles(list);setFilesState('ready');setAnalysis(a);setCurrency(a.metrics[0]?.currency??'USD');setFile(null);fileInput.current.value='';setMessage('Upload saved.');
     })}}><h2>Add a payment file</h2><p>UTF-8 CSV · up to 5,000 rows · 2 MiB · 20 saved files</p><p className="muted">Do not include card numbers, names, or email addresses. Uploaded data is not sent to AI.</p>
       <label>CSV file<input ref={fileInput} type="file" accept=".csv,text/csv" required onChange={e=>setFile(e.target.files[0]??null)}/></label>
-      <button className="button primary" disabled={busy||!file}>{busy?'Working…':'Upload and analyze'}</button>
+      <button className="button primary" disabled={busy||filesState==='loading'||!file}>{busy?'Working…':'Upload and analyze'}</button>
       <details><summary>Required CSV format</summary><pre>id,timestamp,amount,currency,status,latencyMs{'\n'}pay-1,2026-01-01T12:00:00Z,19.99,USD,SUCCESS,120</pre><p>Use SUCCESS or FAILED. IDs must be unique within the file. At least 20 payments per minute are needed for failure and latency rules.</p></details>
-    </form><section className="panel"><div className="panel-heading"><h2>Saved files ({files.length}/20)</h2><button className="button" disabled={busy} onClick={()=>act(async rev=>{const f=await api();if(rev===generation.current)setFiles(f)})}>Refresh files</button></div>
-      {!files.length?<p>No files yet. Your first upload will appear here.</p>:<ul className="upload-list">{files.map(f=><li key={f.id}><button className="text-button" disabled={busy} onClick={()=>open(f.id)}>{f.filename}</button><span>{f.transactionCount} payments · {new Date(f.createdAt).toLocaleDateString()}</span><button className="text-button" disabled={busy} onClick={()=>setPendingDelete(f)}>Delete</button></li>)}</ul>}
+    </form><section className="panel" aria-busy={filesState==='loading'}><div className="panel-heading"><h2>Saved files{filesState==='ready'?` (${files.length}/20)`:''}</h2><button className="button" disabled={busy||filesState==='loading'} onClick={()=>act(async rev=>{
+      setFilesState('loading');
+      try {const f=await api();if(rev===generation.current){setFiles(f);setFilesState('ready')}}
+      catch(e){if(rev===generation.current)setFilesState('error');throw e}
+    })}>Refresh files</button></div>
+      {filesState==='loading'?<p role="status">Loading saved files…</p>:filesState==='error'?<p>Could not load saved files. Use Refresh files to try again.</p>:!files.length?<p>No files yet. Your first upload will appear here.</p>:<ul className="upload-list">{files.map(f=><li key={f.id}><button className="text-button" disabled={busy} onClick={()=>open(f.id)}>{f.filename}</button><span>{f.transactionCount} payments · {new Date(f.createdAt).toLocaleDateString()}</span><button className="text-button" disabled={busy} onClick={()=>setPendingDelete(f)}>Delete</button></li>)}</ul>}
       {pendingDelete&&<div className="notice"><p>Permanently delete {pendingDelete.filename} and all its transactions?</p><button className="button" disabled={busy} onClick={()=>act(async rev=>{await api('/'+pendingDelete.id,{method:'DELETE'});if(rev!==generation.current)return;setFiles(files.filter(f=>f.id!==pendingDelete.id));if(analysis?.upload.id===pendingDelete.id)setAnalysis(null);setPendingDelete(null);setMessage('File deleted.');})}>Delete permanently</button> <button className="button" onClick={()=>setPendingDelete(null)}>Cancel</button></div>}
     </section>{analysis&&<section className="panel"><div className="panel-heading"><h2>{analysis.upload.filename}</h2><label>Currency <select value={currency} onChange={e=>setCurrency(e.target.value)}>{[...new Set(analysis.metrics.map(m=>m.currency))].map(c=><option key={c}>{c}</option>)}</select></label></div>
       <div className="stats">{[['Payments',totals.count],['Failure rate',totals.failureRate==null?'—':totals.failureRate.toFixed(1)+'%'],['Average latency',totals.latency==null?'—':totals.latency.toFixed(0)+' ms']].map(([k,v])=><article className="stat" key={k}><span>{k}</span><strong>{v}</strong></article>)}</div><Chart metrics={metrics} signal="latency"/>
