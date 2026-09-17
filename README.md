@@ -229,7 +229,7 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
-Private accounts and CSV uploads now have a Supabase sign-in interface and a protected Java API. The API validates CSVs, saves owner-scoped history, and calculates per-file metrics and threshold checks. The upload API is deployed on Render and the dashboard includes My uploads. Public registration remains disabled pending email delivery or social-login setup; a real-account upload acceptance check is still outstanding. Google sign-in with PKCE is implemented; its provider setup is documented in the [Google sign-in guide](docs/google-sign-in.md). See [private account setup](docs/private-accounts.md).
+Private accounts use Supabase Google sign-in and a protected Java API on Render. A real test account has uploaded a 180-payment CSV, reopened its saved history after a page reload, and viewed matching metrics and threshold checks. Google OAuth remains in Testing, so this does not establish open public registration. Completing Google's branding and publishing requirements and checking a second live account are still pending. Live AI currently explains the synthetic demo incident; private uploads are not sent to AI. See the [Google sign-in guide](docs/google-sign-in.md) and [private account setup](docs/private-accounts.md).
 
 The [Supabase setup instructions](docs/transaction-upload-format.md#private-storage) include a read-only connection check using the project's database CA certificate.
 

@@ -45,6 +45,10 @@ This remains a portfolio deployment: Render may sleep, free database quotas appl
 
 ## Deployment status
 
-The Java upload service is deployed at `https://sentinelpay-api-xoln.onrender.com` on Render's free plan. Its health check returned UP and anonymous upload requests returned 401. The deployed dashboard includes My uploads and uses that service. A real-account end-to-end import is still pending auth-provider setup; these smoke checks do not establish that public signup works.
+The Java upload service is deployed at `https://sentinelpay-api-xoln.onrender.com` on Render's free plan. Its health check returned UP and anonymous upload requests returned 401. Google sign-in is enabled for the configured test account. The user completed login and uploaded a synthetic CSV; browser checks confirmed the saved file survives a full reload and reopens successfully.
 
-The full Java regression suite passed 142 tests, including four API security tests. After the startup bean-name fix, the four API tests were rerun and the packaged application started against Supabase successfully. Frontend and server unit tests passed 27 tests; the production build and built-Worker checks passed. Browser interaction acceptance tests have not yet been run.
+The sample contains 180 payments, 23 failures, and eight observed minutes. The dashboard shows a rounded 12.8% failure rate and 644 ms weighted average latency. Its minute-level chart values match the CSV: five normal minutes, a warning minute, a critical failure/latency minute, and a final critical volume drop. The five-payment final minute correctly shows insufficient data for failure and latency checks. Live Groq also returned an explanation for the separate synthetic demo incident.
+
+Open registration, a second real Google account, cancellation, and sign-out/re-login still need live acceptance checks. Google remains in Testing pending branding and publishing requirements. Two observed UI issues remain: My uploads inherits the Saved demo label, and the file list briefly shows No files yet while the initial request is loading.
+
+The full Java regression run passed 142 tests with no failures, errors, or skips, covering CSV validation, private storage, API authorization, and the monitoring pipeline. Frontend and server unit tests passed 30 tests. Live browser acceptance covers the saved upload and demo AI checks above; it does not replace cross-account security tests or establish production readiness.
