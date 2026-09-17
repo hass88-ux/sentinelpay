@@ -229,7 +229,7 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
-Private accounts use Supabase Google sign-in and a protected Java API on Render. A real test account has uploaded a 180-payment CSV, reopened its saved history after a page reload, and viewed matching metrics and threshold checks. Google OAuth remains in Testing, so this does not establish open public registration. Completing Google's branding and publishing requirements and checking a second live account are still pending. Live AI currently explains the synthetic demo incident; private uploads are not sent to AI. See the [Google sign-in guide](docs/google-sign-in.md) and [private account setup](docs/private-accounts.md).
+Private accounts use Supabase Google sign-in and a protected Java API on Render. Google OAuth is published in Production, with privacy and terms pages linked from the site and Google's sign-in screen. Browser checks confirmed sign-out, Google re-login, a saved 180-payment CSV, persistence after reload, matching metrics and threshold checks, transaction filtering, and a fresh live AI response. A second real account has not yet been tested. Live AI currently explains the synthetic demo incident; private uploads are not sent to AI. See the [Google sign-in guide](docs/google-sign-in.md) and [private account setup](docs/private-accounts.md).
 
 The [Supabase setup instructions](docs/transaction-upload-format.md#private-storage) include a read-only connection check using the project's database CA certificate.
 
@@ -239,7 +239,7 @@ The [Supabase setup instructions](docs/transaction-upload-format.md#private-stor
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; local Ollama evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Public dashboard, Groq answers, and Docker-based Java hosting working; public registration and observability remain open |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Public dashboard, Groq demo answers, Google sign-in, private uploads, and Docker-based Java hosting working; broader live-account acceptance and observability remain open |
 
 AWS deployment follows in October. The hosted demo uses saved Java-generated data and calls Groq for AI answers. A separate Java API on Render supports authenticated CSV uploads; the Kafka streaming pipeline remains local. Groq free-tier quotas apply; the website does not host model weights.
 

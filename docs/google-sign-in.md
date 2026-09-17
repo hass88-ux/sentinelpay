@@ -24,6 +24,8 @@ Only set the Sites runtime variable `GOOGLE_AUTH_READY=true` after the provider 
 
 ## Acceptance check
 
+The deployed OAuth app is now In production. Its branding links to `/privacy.html` and `/terms.html` on the public dashboard. The approved text lives in `docs/public-policies.md`; the site build generates standalone policy pages without requiring a login. Returning-account sign-out, Google re-login, and saved-upload restoration have been verified in the browser. A second Google account and a new public registration remain unverified.
+
 Use the same browser tab for the round trip so its PKCE verifier is available. Check a successful login, a cancelled login, sign-out, CSV import and refresh, and isolation between two Google accounts. Ensure an account outside Google's test-user list can sign in before announcing open registration. Free Render instances may take time to wake up; retrying a read is safe, but check the saved-file list before retrying an upload whose result was interrupted.
 
 Reference: [Supabase Google authentication](https://supabase.com/docs/guides/auth/social-login/auth-google).
