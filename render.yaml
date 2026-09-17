@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: sentinelpay-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: off
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: uploads
+      - key: SUPABASE_URL
+        value: https://bsbhfwnmzsvbvnnivpsl.supabase.co
+      - key: ALLOWED_ORIGIN
+        value: https://sentinelpay-monitor.w61983961.chatgpt.site
+      - key: UPLOADS_JDBC_URL
+        value: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=verify-full&sslrootcert=/app/supabase-ca.crt
+      - key: UPLOADS_DB_USER
+        value: postgres.bsbhfwnmzsvbvnnivpsl
+      - key: UPLOADS_DB_PASSWORD
+        sync: false

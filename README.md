@@ -229,7 +229,7 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
-Private accounts and CSV uploads are the next extension. The [CSV validator and owner-scoped storage](docs/transaction-upload-format.md) are implemented and tested, but user uploads are not enabled on the public site yet. Authentication and the hosted Java API still need to be connected.
+Private accounts and CSV uploads now have a Supabase sign-in interface and a protected Java API. The API validates CSVs, saves owner-scoped history, and calculates per-file metrics and threshold checks. Hosting and real-account acceptance checks are still in progress; public uploads are not enabled yet. See [private account setup](docs/private-accounts.md).
 
 The [Supabase setup instructions](docs/transaction-upload-format.md#private-storage) include a read-only connection check using the project's database CA certificate.
 
