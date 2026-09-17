@@ -2,6 +2,7 @@ import { build } from 'vite';
 import { readdir, readFile, mkdir, writeFile, copyFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildPolicies } from './build-policies.mjs';
 
 // Preserve the existing React/Vite app; package a small server for secret-bearing AI calls.
 const project = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -10,6 +11,7 @@ if (path.resolve('.') !== project) throw new Error('Run the build from the repos
 const output = path.join(project, 'dist');
 await rm(output, { recursive: true, force: true });
 await build({ build: { outDir: '../dist/client', emptyOutDir: true } });
+await buildPolicies();
 const assets = {};
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml' };

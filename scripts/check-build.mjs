@@ -15,5 +15,13 @@ assert.equal((await data.json()).cases.length, 1);
 const status = await worker.fetch(new Request('https://example.com/api/demo/ai/status'), {});
 assert.equal((await status.json()).enabled, false);
 const missing = await worker.fetch(new Request('https://example.com/missing'), {});
+for(const path of ['/privacy.html','/terms.html']) {
+  const policy=await worker.fetch(new Request('https://example.com'+path),{});
+  assert.equal(policy.status,200);
+  const text=await policy.text();
+  assert.ok(text.includes('muhammadhassanamir888@gmail.com'));
+  assert.ok(text.includes('href="/policy.css"'));
+  assert.ok(!text.includes('Proposed support'));
+}
 assert.equal(missing.status, 404);
 console.log('Built Worker serves HTML, assets, demo data, AI status, and missing routes correctly.');
