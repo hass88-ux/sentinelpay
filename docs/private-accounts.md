@@ -41,3 +41,9 @@ In Supabase Auth URL Configuration, set the public site URL and allow the exact 
 `UploadApiTest` verifies real signed ES256 tokens against a local JWKS endpoint and uses real PostgreSQL. It checks expired tokens, incorrect issuer/audience, forged signatures, cross-owner read/delete, invalid CSV rollback, CORS, and denied simulator access. Store tests cover quotas and atomic writes; parser tests cover the file contract.
 
 This remains a portfolio deployment: Render may sleep, free database quotas apply, and there is no automatic retention or per-account request-rate limiter yet. The runtime currently uses the configured database role; it should be narrowed to an application-specific role before accepting sensitive production data. Do not upload cardholder data. Upload metrics use demo thresholds and are not a trained predictive model. Live AI still explains only the synthetic demo case.
+
+## Deployment status
+
+The Java upload service is deployed at `https://sentinelpay-api-xoln.onrender.com` on Render's free plan. Its health check returned UP and anonymous upload requests returned 401. The deployed dashboard includes My uploads and uses that service. A real-account end-to-end import is still pending auth-provider setup; these smoke checks do not establish that public signup works.
+
+The full Java regression suite passed 142 tests, including four API security tests. After the startup bean-name fix, the four API tests were rerun and the packaged application started against Supabase successfully. Frontend and server unit tests passed 27 tests; the production build and built-Worker checks passed. Browser interaction acceptance tests have not yet been run.

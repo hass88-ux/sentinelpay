@@ -229,7 +229,7 @@ docs/               Demo walkthroughs and implementation details
 
 ## Roadmap
 
-Private accounts and CSV uploads now have a Supabase sign-in interface and a protected Java API. The API validates CSVs, saves owner-scoped history, and calculates per-file metrics and threshold checks. Hosting and real-account acceptance checks are still in progress; public uploads are not enabled yet. See [private account setup](docs/private-accounts.md).
+Private accounts and CSV uploads now have a Supabase sign-in interface and a protected Java API. The API validates CSVs, saves owner-scoped history, and calculates per-file metrics and threshold checks. The upload API is deployed on Render and the dashboard includes My uploads. Public registration remains disabled pending email delivery or social-login setup; a real-account upload acceptance check is still outstanding. See [private account setup](docs/private-accounts.md).
 
 The [Supabase setup instructions](docs/transaction-upload-format.md#private-storage) include a read-only connection check using the project's database CA certificate.
 
@@ -239,9 +239,9 @@ The [Supabase setup instructions](docs/transaction-upload-format.md#private-stor
 | 2 | Kafka streaming and PostgreSQL metrics | Implemented |
 | 3 | Monitoring and anomaly detection | Implemented |
 | 4 | Trend forecasts and incident investigation | Implemented; local Ollama evaluation remains open |
-| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Public dashboard and live Groq answers working; observability, Docker, and live backend hosting still open |
+| 5 | React dashboard with incident questions, observability, Docker, and initial free hosting | Public dashboard, Groq answers, and Docker-based Java hosting working; public registration and observability remain open |
 
-AWS deployment follows in October. The hosted dashboard uses saved Java-generated data and calls Groq for AI answers. The live Java pipeline still needs a hosting provider. Groq free-tier quotas apply; the website does not host model weights.
+AWS deployment follows in October. The hosted demo uses saved Java-generated data and calls Groq for AI answers. A separate Java API on Render supports authenticated CSV uploads; the Kafka streaming pipeline remains local. Groq free-tier quotas apply; the website does not host model weights.
 
 The Java pipeline is for local development and has no authentication or rate limiting. The public AI endpoint has best-effort request limits; it is not a production abuse-prevention system. Detection thresholds are demo settings, complete feed silence needs a separate check, and corrections older than the 30-minute scan window need a backfill feature. Multi-minute incident grouping, automatic retention, and TimescaleDB support are also still open.
 
