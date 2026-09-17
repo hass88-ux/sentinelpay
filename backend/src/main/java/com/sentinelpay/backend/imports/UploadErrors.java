@@ -10,6 +10,13 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice(assignableTypes = UploadController.class)
 @Profile("uploads")
 public class UploadErrors {
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    ResponseEntity<ProblemDetail> status(org.springframework.web.server.ResponseStatusException ex) {
+        var body=ProblemDetail.forStatusAndDetail(ex.getStatusCode(),ex.getReason()==null?"Request could not be completed.":ex.getReason());
+        var response=ResponseEntity.status(ex.getStatusCode());
+        if(ex.getStatusCode().value()==429)response.header("Retry-After","60");
+        return response.body(body);
+    }
     @ExceptionHandler(IllegalArgumentException.class) ProblemDetail invalid(IllegalArgumentException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }

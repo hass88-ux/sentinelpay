@@ -4,6 +4,7 @@ import Chart from './Chart';
 import {summary} from './data';
 import {uploadRequest} from './uploads';
 import {startGoogleSignIn} from './google-auth';
+import UploadAi from './UploadAi';
 
 export default function Accounts() {
   const [client,setClient]=useState(null),[config,setConfig]=useState(null),[session,setSession]=useState(null);
@@ -92,7 +93,7 @@ export default function Accounts() {
       const body=new FormData();body.append('file',file);const saved=await api('',{method:'POST',body});
       const [list,a]=await Promise.all([api(),api('/'+saved.id)]);if(revision!==generation.current)return;
       setFiles(list);setFilesState('ready');setAnalysis(a);setCurrency(a.metrics[0]?.currency??'USD');setFile(null);fileInput.current.value='';setMessage('Upload saved.');
-    })}}><h2>Add a payment file</h2><p>UTF-8 CSV · up to 5,000 rows · 2 MiB · 20 saved files</p><p className="muted">Do not include card numbers, names, or email addresses. Uploaded data is not sent to AI.</p>
+    })}}><h2>Add a payment file</h2><p>UTF-8 CSV · up to 5,000 rows · 2 MiB · 20 saved files</p><p className="muted">Do not include card numbers, names, or email addresses. AI receives a summary only when you explicitly ask and consent.</p>
       <label>CSV file<input ref={fileInput} type="file" accept=".csv,text/csv" required onChange={e=>setFile(e.target.files[0]??null)}/></label>
       <button className="button primary" disabled={busy||filesState==='loading'||!file}>{busy?'Working…':'Upload and analyze'}</button>
       <details><summary>Required CSV format</summary><pre>id,timestamp,amount,currency,status,latencyMs{'\n'}pay-1,2026-01-01T12:00:00Z,19.99,USD,SUCCESS,120</pre><p>Use SUCCESS or FAILED. IDs must be unique within the file. At least 20 payments per minute are needed for failure and latency rules.</p></details>
@@ -106,6 +107,10 @@ export default function Accounts() {
     </section>{analysis&&<section className="panel"><div className="panel-heading"><h2>{analysis.upload.filename}</h2><label>Currency <select value={currency} onChange={e=>setCurrency(e.target.value)}>{[...new Set(analysis.metrics.map(m=>m.currency))].map(c=><option key={c}>{c}</option>)}</select></label></div>
       <div className="stats">{[['Payments',totals.count],['Failure rate',totals.failureRate==null?'—':totals.failureRate.toFixed(1)+'%'],['Average latency',totals.latency==null?'—':totals.latency.toFixed(0)+' ms']].map(([k,v])=><article className="stat" key={k}><span>{k}</span><strong>{v}</strong></article>)}</div><Chart metrics={metrics} signal="latency"/>
       <h3>Checks by minute · UTC</h3><p className="muted">Rules describe this file only. Missing minutes are not treated as zero traffic. These are threshold checks, not AI conclusions.</p><div className="upload-checks">{analysis.findings.filter(f=>f.currency===currency).map(f=><div key={f.bucket}><strong>{new Date(f.bucket).toISOString().replace('T',' ').slice(0,16)}</strong>{f.evaluations.map(e=><p key={e.rule}><span className={`severity ${e.state==='CRITICAL'?'critical':e.state==='WARNING'?'warning':'neutral'}`}>{e.state.replaceAll('_',' ')}</span> {e.rule.replaceAll('_',' ')} — {e.explanation}</p>)}</div>)}</div>
+      <UploadAi key={analysis.upload.id+currency} id={analysis.upload.id} currency={currency} getToken={async()=>{
+        const {data:{session:current}}=await client.auth.getSession();
+        if(!current)throw new Error('Sign in again to continue.');return current.access_token;
+      }}/>
     </section>}</>}
   </section>;
 }

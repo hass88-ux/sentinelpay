@@ -102,4 +102,27 @@ class UploadApiTest {
         mvc.perform(options("/api/uploads").header("Origin","https://evil.example").header("Access-Control-Request-Method","POST"))
                 .andExpect(status().isForbidden());
     }
+    @Test void privateAiContextIsOwnerScopedMinimizedAndRateLimited() throws Exception {
+        var result=mvc.perform(multipart("/api/uploads").file(csv(TransactionCsvReader.HEADER+"\nsecret-id,2026-01-01T12:00:00Z,19.99,USD,SUCCESS,100\n"))
+            .header("Authorization","Bearer "+token(alice))).andExpect(status().isCreated()).andReturn();
+        String id=new tools.jackson.databind.ObjectMapper().readTree(result.getResponse().getContentAsString()).get("id").asText();
+        String path="/api/uploads/"+id+"/ai-context";
+        mvc.perform(post(path).contentType("application/json").content("{\"currency\":\"USD\"}")).andExpect(status().isUnauthorized());
+        mvc.perform(post(path).header("Authorization","Bearer "+token(bob)).contentType("application/json").content("{\"currency\":\"USD\"}"))
+            .andExpect(status().isNotFound());
+        for(int i=0;i<3;i++){
+            var response=mvc.perform(post(path).header("Authorization","Bearer "+token(alice)).contentType("application/json").content("{\"currency\":\"USD\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.observations[0].totalCount").value(1))
+                .andExpect(jsonPath("$.observations[0].totalAmount").doesNotExist()).andExpect(jsonPath("$.upload").doesNotExist()).andReturn();
+            org.junit.jupiter.api.Assertions.assertFalse(response.getResponse().getContentAsString().contains("secret-id"));
+        }
+        mvc.perform(post(path).header("Authorization","Bearer "+token(alice)).contentType("application/json").content("{\"currency\":\"USD\"}"))
+            .andExpect(status().isTooManyRequests()).andExpect(header().string("Retry-After","60"));
+    }
+    @Test void rateLimitsUploadAttemptsIndependentlyPerAccount() throws Exception {
+        for(int i=0;i<5;i++)mvc.perform(multipart("/api/uploads").file(csv("invalid"))
+            .header("Authorization","Bearer "+token(alice))).andExpect(status().isBadRequest());
+        mvc.perform(multipart("/api/uploads").file(csv("invalid")).header("Authorization","Bearer "+token(alice))).andExpect(status().isTooManyRequests());
+        mvc.perform(multipart("/api/uploads").file(csv("invalid")).header("Authorization","Bearer "+token(bob))).andExpect(status().isBadRequest());
+    }
 }

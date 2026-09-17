@@ -18,6 +18,8 @@ services:
       - key: UPLOADS_JDBC_URL
         value: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=verify-full&sslrootcert=/app/supabase-ca.crt
       - key: UPLOADS_DB_USER
-        value: postgres.bsbhfwnmzsvbvnnivpsl
+        value: sentinelpay_runtime.bsbhfwnmzsvbvnnivpsl
+      - key: UPLOADS_MIGRATIONS_ENABLED
+        value: "false"
       - key: UPLOADS_DB_PASSWORD
         sync: false

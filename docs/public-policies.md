@@ -16,11 +16,11 @@ The Java API receives the CSV you select. It validates transaction identifiers, 
 
 ### AI explanations
 
-The demo's AI feature sends your question and the selected synthetic incident's aggregate evidence to Groq. Do not enter personal or confidential information in questions. Private uploaded transactions are not currently sent to Groq. SentinelPay does not save a chat history, but the AI provider processes requests under its own policies. AI answers can be incorrect and do not establish a root cause.
+The demo's AI feature sends your question and the selected synthetic incident's aggregate evidence to Groq. For a private upload, AI runs only when you agree to share a summary and submit a question. Groq receives that question and the selected currency's minute-level counts, failures, latencies, and rule findings. Transaction IDs, amounts, filenames, and account details are excluded. Do not enter personal or confidential information in questions. SentinelPay does not save a chat history, but the AI provider processes requests under its own policies. AI answers can be incorrect and do not establish a root cause.
 
 ### Service providers and browser storage
 
-Google and Supabase provide authentication. Render hosts the Java API, Supabase hosts the database, and OpenAI Sites provides the dashboard hosting. Groq processes demo AI questions. These providers process information needed to deliver their services and may retain operational or security logs under their own policies. The dashboard also loads fonts from Google Fonts.
+Google and Supabase provide authentication. Render hosts the Java API, Supabase hosts the database, and OpenAI Sites provides the dashboard hosting. Groq processes AI questions and the evidence described above. These providers process information needed to deliver their services and may retain operational or security logs under their own policies. The dashboard also loads fonts from Google Fonts.
 
 The dashboard keeps authentication session information in browser session storage to maintain sign-in in the current tab. It does not implement advertising trackers. Hosting and authentication services may use their own necessary storage and logs.
 

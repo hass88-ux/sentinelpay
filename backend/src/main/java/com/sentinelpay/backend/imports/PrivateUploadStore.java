@@ -85,4 +85,21 @@ public final class PrivateUploadStore {
         Objects.requireNonNull(owner, "Authenticated owner required");
         return jdbc.update("DELETE FROM sentinelpay_private.upload WHERE owner_id = ? AND id = ?", owner, id) == 1;
     }
+
+    /** Atomic fixed-window limits shared across application instances; one row per account/operation. */
+    public boolean reserveRequest(UUID owner, String operation, int perMinute, int perDay) {
+        return !jdbc.query("""
+                INSERT INTO sentinelpay_private.request_limit AS r
+                  (owner_id, operation, minute_start, minute_count, day_start, day_count)
+                VALUES (?, ?, date_trunc('minute', now()), 1, date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC', 1)
+                ON CONFLICT (owner_id, operation) DO UPDATE SET
+                  minute_start = date_trunc('minute', now()),
+                  minute_count = CASE WHEN r.minute_start = date_trunc('minute', now()) THEN r.minute_count + 1 ELSE 1 END,
+                  day_start = date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC',
+                  day_count = CASE WHEN r.day_start = date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' THEN r.day_count + 1 ELSE 1 END
+                WHERE (r.minute_start < date_trunc('minute', now()) OR r.minute_count < ?)
+                  AND (r.day_start < date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' OR r.day_count < ?)
+                RETURNING minute_count
+                """, (r,n)->r.getInt(1), owner, operation, perMinute, perDay).isEmpty();
+    }
 }

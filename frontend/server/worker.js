@@ -2,13 +2,16 @@ import snapshot from '../public/demo/snapshot.json';
 import assets from '../../.sites-runtime/static-assets.js';
 import { createHandler } from './incident-ai.js';
 import { accountConfig } from './account-config.js';
+import { createPrivateAiHandler } from './private-ai.js';
 
 const api = createHandler(snapshot);
+const privateAi=createPrivateAiHandler();
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const accounts=accountConfig(env);
     if(url.pathname==='/api/account-config')return Response.json(accounts,{headers:{'Cache-Control':'no-store'}});
+    if(url.pathname.startsWith('/api/uploads/'))return privateAi(request,env);
     if (url.pathname.startsWith('/api/')) return api(request, env);
     if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
     const path = url.pathname === '/' ? '/index.html' : url.pathname;
