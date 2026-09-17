@@ -30,6 +30,7 @@ The Sites server needs these runtime values:
 - `SUPABASE_URL`: project URL.
 - `SUPABASE_PUBLISHABLE_KEY`: public browser key, never a secret/service-role key.
 - `UPLOADS_API_URL`: the deployed HTTPS Render origin.
+- `EMAIL_AUTH_READY`: set to `true` only after confirmation and password-reset email delivery work. Until then, the site offers existing-account sign-in and explains that registration is not ready.
 
 The dashboard account configuration stays disabled until all three exist. Its CSP permits connections only to itself and those configured origins. Render accepts the dashboard origin through `ALLOWED_ORIGIN`. The hosted upload profile denies access to local simulator and pipeline endpoints.
 

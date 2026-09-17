@@ -68,7 +68,8 @@ export default function Accounts() {
       {mode!=='reset'&&<label>Password<input type="password" autoComplete={mode==='signin'?'current-password':'new-password'} minLength={mode==='signin'?1:12} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)}/></label>}
       {['signup','newpassword'].includes(mode)&&<p className="muted">Use at least 12 characters.</p>}
       <button className="button primary" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':mode==='reset'?'Send reset link':mode==='newpassword'?'Save password':'Sign in'}</button>
-      <div className="account-links">{['signin','signup','reset'].filter(m=>m!==mode).map(m=><button type="button" className="text-button" key={m} onClick={()=>{setMode(m);setPassword('');setError('');setMessage('')}}>{m==='signin'?'Sign in':m==='signup'?'Create account':'Forgot password?'}</button>)}</div>
+      {!config.emailAuthReady&&<p className="muted">Sign-in is available for existing accounts. New registration and password-reset emails are not available yet.</p>}
+      <div className="account-links">{(config.emailAuthReady?['signin','signup','reset']:['signin']).filter(m=>m!==mode).map(m=><button type="button" className="text-button" key={m} onClick={()=>{setMode(m);setPassword('');setError('');setMessage('')}}>{m==='signin'?'Sign in':m==='signup'?'Create account':'Forgot password?'}</button>)}</div>
     </form>}
     {session&&mode!=='newpassword'&&<><p className="muted">Signed in as {session.user.email}</p><form className="panel upload-form" onSubmit={e=>{e.preventDefault();if(!file)return;act(async revision=>{
       if(file.size>2*1024*1024)throw new Error('Choose a CSV of 2 MiB or less.');
