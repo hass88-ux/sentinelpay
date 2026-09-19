@@ -258,3 +258,5 @@ The Java pipeline is for local development and has no authentication or rate lim
 Private upload requests have a 90-second timeout and readable network, quota, and service errors. Uploads and deletions are never retried automatically: losing a response does not prove the write failed. If a request times out, refresh saved files before repeating it. Cancellation is preserved, and server error pages are not shown to users.
 
 This improves failure handling without paid infrastructure. It does not add guaranteed uptime, database restore testing, or an operational support commitment. The frontend/server suite has 43 passing tests, including ambiguous writes, cancellation, rate limits, and timeout cleanup.
+
+Database row-level security is implemented for private files and transaction rows, alongside Java ownership checks. The rollout must deploy transaction-local account context before enabling the database policies. See [database isolation](docs/database-isolation.md) for tests, the trust boundary, and deployment order.

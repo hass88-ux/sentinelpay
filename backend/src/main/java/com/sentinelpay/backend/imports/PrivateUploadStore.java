@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -33,7 +34,7 @@ public final class PrivateUploadStore {
             throw new IllegalArgumentException("Filename must contain 1 to 128 characters without control characters");
         if (events == null || events.isEmpty() || events.size() > TransactionCsvReader.MAX_ROWS)
             throw new IllegalArgumentException("Upload must contain 1 to 5000 transactions");
-        return transaction.execute(status -> {
+        return asOwner(owner, () -> {
             // Serialize quota checks for one owner, including requests handled by different Java instances.
             jdbc.query("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", rs -> {}, owner.toString());
             Integer count = jdbc.queryForObject("SELECT count(*) FROM sentinelpay_private.upload WHERE owner_id = ?", Integer.class, owner);
@@ -56,19 +57,19 @@ public final class PrivateUploadStore {
 
     public List<Upload> list(UUID owner) {
         Objects.requireNonNull(owner, "Authenticated owner required");
-        return jdbc.query("SELECT id, filename, created_at, transaction_count FROM sentinelpay_private.upload WHERE owner_id = ? ORDER BY created_at DESC, id LIMIT 20",
-                (r, n) -> new Upload(r.getObject("id", UUID.class), r.getString("filename"), r.getTimestamp("created_at").toInstant(), r.getInt("transaction_count")), owner);
+        return asOwner(owner, () -> jdbc.query("SELECT id, filename, created_at, transaction_count FROM sentinelpay_private.upload WHERE owner_id = ? ORDER BY created_at DESC, id LIMIT 20",
+                (r, n) -> new Upload(r.getObject("id", UUID.class), r.getString("filename"), r.getTimestamp("created_at").toInstant(), r.getInt("transaction_count")), owner));
     }
 
     public Optional<Upload> find(UUID owner, UUID id) {
         Objects.requireNonNull(owner, "Authenticated owner required");
-        return jdbc.query("SELECT id, filename, created_at, transaction_count FROM sentinelpay_private.upload WHERE owner_id = ? AND id = ?",
-                (r, n) -> new Upload(r.getObject("id", UUID.class), r.getString("filename"), r.getTimestamp("created_at").toInstant(), r.getInt("transaction_count")), owner, id).stream().findFirst();
+        return asOwner(owner, () -> jdbc.query("SELECT id, filename, created_at, transaction_count FROM sentinelpay_private.upload WHERE owner_id = ? AND id = ?",
+                (r, n) -> new Upload(r.getObject("id", UUID.class), r.getString("filename"), r.getTimestamp("created_at").toInstant(), r.getInt("transaction_count")), owner, id).stream().findFirst());
     }
 
     public List<MinuteMetric> metrics(UUID owner, UUID id) {
         Objects.requireNonNull(owner, "Authenticated owner required");
-        return jdbc.query("""
+        return asOwner(owner, () -> jdbc.query("""
                 SELECT date_trunc('minute', occurred_at) AS bucket, currency, count(*) AS total_count,
                   count(*) FILTER (WHERE status = 'SUCCESS') AS success_count,
                   count(*) FILTER (WHERE status = 'FAILED') AS failed_count,
@@ -78,12 +79,21 @@ public final class PrivateUploadStore {
                 GROUP BY bucket, currency ORDER BY bucket, currency
                 """, (r,n) -> new MinuteMetric(r.getTimestamp("bucket").toInstant(), r.getString("currency"),
                 r.getLong("total_count"), r.getLong("success_count"), r.getLong("failed_count"),
-                r.getBigDecimal("total_amount"), r.getBigDecimal("average_latency_ms"), r.getLong("max_latency_ms")), owner, id);
+                r.getBigDecimal("total_amount"), r.getBigDecimal("average_latency_ms"), r.getLong("max_latency_ms")), owner, id));
     }
 
     public boolean delete(UUID owner, UUID id) {
         Objects.requireNonNull(owner, "Authenticated owner required");
-        return jdbc.update("DELETE FROM sentinelpay_private.upload WHERE owner_id = ? AND id = ?", owner, id) == 1;
+        return asOwner(owner, () -> jdbc.update("DELETE FROM sentinelpay_private.upload WHERE owner_id = ? AND id = ?", owner, id) == 1);
+    }
+
+    private <T> T asOwner(UUID owner, Supplier<T> operation) {
+        Objects.requireNonNull(owner, "Authenticated owner required");
+        return transaction.execute(status -> {
+            // true makes the setting transaction-local: pooled connections cannot retain this identity.
+            jdbc.queryForObject("SELECT set_config('sentinelpay.owner_id', ?, true)", String.class, owner.toString());
+            return operation.get();
+        });
     }
 
     /** Atomic fixed-window limits shared across application instances; one row per account/operation. */

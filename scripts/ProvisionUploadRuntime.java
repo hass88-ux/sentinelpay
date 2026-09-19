@@ -27,6 +27,14 @@ class ProvisionUploadRuntime {
             try(var r=s.executeQuery("SELECT has_schema_privilege(current_user,'sentinelpay_private','CREATE'), has_table_privilege(current_user,'sentinelpay_private.upload','SELECT'), has_schema_privilege(current_user,'auth','USAGE')")){
                 if(!r.next()||r.getBoolean(1)||!r.getBoolean(2)||r.getBoolean(3))throw new IllegalStateException("Runtime grants are incorrect");
             }
+            try(var r=s.executeQuery("SELECT count(*) FROM pg_class t JOIN pg_namespace n ON n.oid=t.relnamespace WHERE n.nspname='sentinelpay_private' AND t.relname IN ('upload','upload_event') AND t.relrowsecurity AND t.relforcerowsecurity AND t.relowner<>(SELECT oid FROM pg_roles WHERE rolname=current_user)")){
+                if(!r.next()||r.getInt(1)!=2)throw new IllegalStateException("Upload row security is not enforced");
+            }
+            for(String table:new String[]{"upload","upload_event"}) {
+                try(var r=s.executeQuery("SELECT count(*) FROM sentinelpay_private."+table)) {
+                    if(!r.next()||r.getLong(1)!=0)throw new IllegalStateException("Missing owner context exposed rows");
+                }
+            }
         }
         System.out.println("Migrations applied; restricted runtime login and grants verified. No credentials printed.");
     }
