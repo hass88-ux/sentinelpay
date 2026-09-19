@@ -4,6 +4,16 @@ const id='11111111-1111-4111-8111-111111111111';
 const env={UPLOADS_API_URL:'https://java.example',GROQ_API_KEY:'provider-key'};
 const req=(body={question:'What changed?',currency:'USD',consent:true},token='Bearer test')=>new Request(`https://site.example/api/uploads/${id}/questions`,{method:'POST',headers:{Origin:'https://site.example','Content-Type':'application/json',Authorization:token},body:JSON.stringify(body)});
 describe('private upload AI boundary',()=>{
+  it('works without the optional AbortSignal.timeout API',async()=>{
+    const timeout=vi.spyOn(AbortSignal,'timeout').mockImplementation(()=>{throw new TypeError('Unavailable in runtime');});
+    try {
+      const fetcher=vi.fn().mockResolvedValue(new Response('',{status:404}));
+      const response=await createPrivateAiHandler({fetcher})(req(),env);
+      expect(response.status).toBe(404);
+      expect(fetcher.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+      expect(timeout).not.toHaveBeenCalled();
+    }finally{timeout.mockRestore();}
+  });
   it('requires explicit consent before any external request',async()=>{
     const fetcher=vi.fn();const r=await createPrivateAiHandler({fetcher})(req({question:'Explain',currency:'USD',consent:false}),env);
     expect(r.status).toBe(400);expect(fetcher).not.toHaveBeenCalled();

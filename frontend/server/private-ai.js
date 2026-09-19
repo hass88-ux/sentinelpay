@@ -6,6 +6,8 @@ export function createPrivateAiHandler({fetcher=fetch}={}) {
   return async (request,env)=>{
     const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
     const json=(body,status=200)=>Response.json(body,{status,headers});
+    const controller=new AbortController();
+    let timer,stage='validation';
     try {
       const url=new URL(request.url);
       const match=url.pathname.match(/^\/api\/uploads\/([a-f0-9-]{36})\/questions$/);
@@ -23,19 +25,25 @@ export function createPrivateAiHandler({fetcher=fetch}={}) {
       if(!env.GROQ_API_KEY)throw new ApiError(503,'AI is unavailable. Your metrics and checks still work.');
       const upstream=new URL(env.UPLOADS_API_URL);
       if(upstream.protocol!=='https:')throw new ApiError(503,'Upload API is unavailable.');
+      stage='upload service';
+      timer=setTimeout(()=>controller.abort(),55000);
       const response=await fetcher(`${upstream.origin}/api/uploads/${match[1]}/ai-context`,{
         method:'POST',headers:{Authorization:token,'Content-Type':'application/json'},
-        body:JSON.stringify({currency:body.currency}),signal:AbortSignal.timeout(55000),redirect:'error'});
+        body:JSON.stringify({currency:body.currency}),signal:controller.signal,redirect:'error'});
       if(!response.ok){await response.body?.cancel();throw new ApiError([400,401,404,429].includes(response.status)?response.status:503,
         response.status===401?'Your session expired. Sign in again.':response.status===404?'This file is unavailable or belongs to another account.':
         response.status===429?'AI request limit reached. Try later (3/minute, 20/day per account; shared capacity also applies).':
         response.status===400?'AI needs a valid currency and at most 120 observed minutes in that currency.':'The upload service is unavailable. Try again shortly.');}
       const raw=await readJsonLimited(response.body,180000);
+      clearTimeout(timer);
+      stage='metric summary';
       // Explicitly select fields even if a later Java response adds file metadata.
       const facts={source:'Private uploaded payment metrics',currency:raw.currency,
         observations:raw.observations.map(({bucket,totalCount,failedCount,averageLatencyMs})=>({bucket,totalCount,failedCount,averageLatencyMs})),
         findings:raw.findings.map(({bucket,currency,evaluations})=>({bucket,currency,evaluations:evaluations.map(({rule,state,observed,warningThreshold,criticalThreshold,explanation})=>({rule,state,observed,warningThreshold,criticalThreshold,explanation}))}))};
+      stage='AI provider';
       return json(await answerFacts({facts,question:body.question,key:env.GROQ_API_KEY,fetcher}));
-    } catch(e){return json({detail:e instanceof ApiError?e.message:'AI could not complete this request. Your saved file is unchanged.'},e instanceof ApiError?e.status:503);}
+    } catch(e){return json({detail:e instanceof ApiError?e.message:`AI could not complete the ${stage} step. Please retry shortly. Your saved file is unchanged.`},e instanceof ApiError?e.status:503);}
+    finally{clearTimeout(timer);}
   };
 }
