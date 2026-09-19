@@ -29,7 +29,7 @@ export function createPrivateAiHandler({fetcher=fetch}={}) {
       timer=setTimeout(()=>controller.abort(),55000);
       const response=await fetcher(`${upstream.origin}/api/uploads/${match[1]}/ai-context`,{
         method:'POST',headers:{Authorization:token,'Content-Type':'application/json'},
-        body:JSON.stringify({currency:body.currency}),signal:controller.signal,redirect:'error'});
+        body:JSON.stringify({currency:body.currency}),signal:controller.signal,redirect:'manual'});
       if(!response.ok){await response.body?.cancel();throw new ApiError([400,401,404,429].includes(response.status)?response.status:503,
         response.status===401?'Your session expired. Sign in again.':response.status===404?'This file is unavailable or belongs to another account.':
         response.status===429?'AI request limit reached. Try later (3/minute, 20/day per account; shared capacity also applies).':

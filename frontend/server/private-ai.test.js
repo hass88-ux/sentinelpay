@@ -11,8 +11,15 @@ describe('private upload AI boundary',()=>{
       const response=await createPrivateAiHandler({fetcher})(req(),env);
       expect(response.status).toBe(404);
       expect(fetcher.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+      expect(fetcher.mock.calls[0][1].redirect).toBe('manual');
       expect(timeout).not.toHaveBeenCalled();
     }finally{timeout.mockRestore();}
+  });
+  it('does not follow redirects carrying the account token',async()=>{
+    const fetcher=vi.fn().mockResolvedValue(new Response(null,{status:302,headers:{Location:'https://other.example'}}));
+    expect((await createPrivateAiHandler({fetcher})(req(),env)).status).toBe(503);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher.mock.calls[0][1].redirect).toBe('manual');
   });
   it('requires explicit consent before any external request',async()=>{
     const fetcher=vi.fn();const r=await createPrivateAiHandler({fetcher})(req({question:'Explain',currency:'USD',consent:false}),env);
