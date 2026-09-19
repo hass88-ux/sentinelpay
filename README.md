@@ -252,3 +252,9 @@ The Java pipeline is for local development and has no authentication or rate lim
 - [Monitoring rules and findings](docs/part-3-demo.md)
 - [Forecasts and incident investigation](docs/part-4-demo.md)
 - [Dashboard and saved demo](docs/part-5-dashboard.md)
+
+### Reliability on free hosting
+
+Private upload requests have a 90-second timeout and readable network, quota, and service errors. Uploads and deletions are never retried automatically: losing a response does not prove the write failed. If a request times out, refresh saved files before repeating it. Cancellation is preserved, and server error pages are not shown to users.
+
+This improves failure handling without paid infrastructure. It does not add guaranteed uptime, database restore testing, or an operational support commitment. The frontend/server suite has 43 passing tests, including ambiguous writes, cancellation, rate limits, and timeout cleanup.
