@@ -43,7 +43,9 @@ export function createPrivateAiHandler({fetcher=fetch}={}) {
         findings:raw.findings.map(({bucket,currency,evaluations})=>({bucket,currency,evaluations:evaluations.map(({rule,state,observed,warningThreshold,criticalThreshold,explanation})=>({rule,state,observed,warningThreshold,criticalThreshold,explanation}))}))};
       stage='AI provider';
       return json(await answerFacts({facts,question:body.question,key:env.GROQ_API_KEY,fetcher}));
-    } catch(e){return json({detail:e instanceof ApiError?e.message:`AI could not complete the ${stage} step. Please retry shortly. Your saved file is unchanged.`},e instanceof ApiError?e.status:503);}
+    } catch(e){
+      if(!(e instanceof ApiError)) console.error('Private AI failure',stage,e.name,String(e.message).replace(/https?:\/\/\S+|Bearer\s+\S+|eyJ[\w.-]+/g,'[redacted]').slice(0,240));
+      return json({detail:e instanceof ApiError?e.message:`AI could not complete the ${stage} step. Please retry shortly. Your saved file is unchanged.`},e instanceof ApiError?e.status:503);}
     finally{clearTimeout(timer);}
   };
 }
