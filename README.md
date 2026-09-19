@@ -259,4 +259,4 @@ Private upload requests have a 90-second timeout and readable network, quota, an
 
 This improves failure handling without paid infrastructure. It does not add guaranteed uptime, database restore testing, or an operational support commitment. The frontend/server suite has 43 passing tests, including ambiguous writes, cancellation, rate limits, and timeout cleanup.
 
-Database row-level security is implemented for private files and transaction rows, alongside Java ownership checks. The rollout must deploy transaction-local account context before enabling the database policies. See [database isolation](docs/database-isolation.md) for tests, the trust boundary, and deployment order.
+Database row-level security is deployed and verified for private files and transaction rows, alongside Java ownership checks. The rollout must deploy transaction-local account context before enabling the database policies. See [database isolation](docs/database-isolation.md) for tests, the trust boundary, and deployment order.

@@ -16,3 +16,9 @@ This protects against accidentally omitted ownership filters. It does not protec
 The migration changes policies only; it does not delete or rewrite uploaded records. Tests use a restricted login and a single pooled connection, check unfiltered reads and cross-owner inserts/deletes, and verify that commit and rollback do not retain identity. Existing API tests also exercise signed-token authorization.
 
 Reference: [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html).
+
+## Verified deployment
+
+The compatible API deployed successfully before V3 was applied to the hosted database. The provisioning check confirmed both tables enforce row security, the runtime role does not own them or bypass policies, and unscoped runtime reads return no rows. The signed-in second account then reopened its existing sample and saw the expected 180 payments, 12.8% failure rate, and 644 ms average latency. No upload data was rewritten.
+
+All seven restricted-role storage tests and six signed-token API tests passed. This change did not rerun the unrelated streaming regression suite. The frontend was unchanged.
