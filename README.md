@@ -260,3 +260,7 @@ Private upload requests have a 90-second timeout and readable network, quota, an
 This improves failure handling without paid infrastructure. It does not add guaranteed uptime, database restore testing, or an operational support commitment. The frontend/server suite has 43 passing tests, including ambiguous writes, cancellation, rate limits, and timeout cleanup.
 
 Database row-level security is deployed and verified for private files and transaction rows, alongside Java ownership checks. The rollout must deploy transaction-local account context before enabling the database policies. See [database isolation](docs/database-isolation.md) for tests, the trust boundary, and deployment order.
+
+### Workspace experience
+
+The private workspace includes a responsive sign-in screen, reduced-motion-aware entrance animations, filename search, selected-file highlighting, and a downloadable synthetic CSV. The sample contains 180 payments across eight minutes with 23 failures; it is for exploring the checks, not production telemetry. Google sign-in is the primary route, with existing email sign-in available separately. The frontend/server suite passes 44 tests.

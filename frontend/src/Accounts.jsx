@@ -5,6 +5,7 @@ import {summary} from './data';
 import {uploadRequest} from './uploads';
 import {startGoogleSignIn} from './google-auth';
 import UploadAi from './UploadAi';
+import {downloadSample} from './sample-csv';
 
 export default function Accounts() {
   const [client,setClient]=useState(null),[config,setConfig]=useState(null),[session,setSession]=useState(null);
@@ -12,6 +13,8 @@ export default function Accounts() {
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
   const [files,setFiles]=useState([]),[analysis,setAnalysis]=useState(null),[currency,setCurrency]=useState('USD');
   const [filesState,setFilesState]=useState('loading');
+  const [fileSearch,setFileSearch]=useState('');
+  const [emailExpanded,setEmailExpanded]=useState(false);
   const [pendingDelete,setPendingDelete]=useState(null),[file,setFile]=useState(null);
   const generation=useRef(0), fileInput=useRef(null), currentOwner=useRef(null);
   useEffect(()=>{
@@ -78,22 +81,23 @@ export default function Accounts() {
     {error&&<p className="notice" role="alert">{error}</p>}{message&&<p className="notice" role="status">{message}</p>}
     {!client&&!error&&<p role="status">Connecting to accounts…</p>}
     {client&&(!session||mode==='newpassword')&&<form className="panel account-form" onSubmit={authenticate}>
-      <h2>{mode==='signup'?'Create your account':mode==='reset'?'Reset password':mode==='newpassword'?'Choose a new password':'Sign in'}</h2>
+      <div className="login-story"><span className="login-kicker">SENTINELPAY / YOUR WORKSPACE</span><h2>Find the signal.<br/><em>Follow the evidence.</em></h2><p>A quieter place to investigate payment failures. Bring a CSV, inspect the timeline, and ask better questions.</p><div className="signal-art" aria-hidden="true"><span>PAYMENT SIGNAL / ILLUSTRATION</span><svg viewBox="0 0 500 130"><path className="signal-grid" d="M0 30H500M0 65H500M0 100H500"/><path className="signal-line" d="M0 100L70 100L85 85L105 105L130 98L180 98L200 65L220 95L255 95L275 20L295 110L320 60L350 95L410 95L430 85L450 95L500 95"/></svg></div><ol className="login-steps"><li><b>01</b><span>Bring your data<small>Private CSV uploads</small></span></li><li><b>02</b><span>See what changed<small>Metrics and threshold checks</small></span></li><li><b>03</b><span>Investigate with context<small>Optional AI explanations</small></span></li></ol></div>
+      <div className="login-controls"><span className="login-kicker">START AN INVESTIGATION</span><h2>{mode==='signup'?'Create your account':mode==='reset'?'Reset password':mode==='newpassword'?'Choose a new password':'Welcome to your workspace.'}</h2><p className="muted">Your files. Your analysis. One place to pick up where you left off.</p>
       {mode==='signin'&&<><button type="button" className="button google-signin" disabled={busy||!config.googleAuthReady} onClick={googleSignIn}>{busy?'Connecting…':'Continue with Google'}</button>
-      <p className="muted">{config.googleAuthReady?'New here? Google sign-in creates your private account.':'Google sign-in is being connected.'}</p><span className="muted">Or sign in with an existing email account</span></>}
-      {mode!=='newpassword'&&<label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label>}
+      <p className="muted">{config.googleAuthReady?'New here? Google sign-in creates your private account.':'Google sign-in is being connected.'}</p><button type="button" className="text-button" aria-expanded={emailExpanded} onClick={()=>setEmailExpanded(!emailExpanded)}>{emailExpanded?'Hide email sign-in':'Use an existing email account →'}</button></>}
+      {(emailExpanded||mode!=='signin')&&<>{mode!=='newpassword'&&<label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label>}
       {mode!=='reset'&&<label>Password<input type="password" autoComplete={mode==='signin'?'current-password':'new-password'} minLength={mode==='signin'?1:12} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)}/></label>}
       {['signup','newpassword'].includes(mode)&&<p className="muted">Use at least 12 characters.</p>}
       <button className="button primary" disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':mode==='reset'?'Send reset link':mode==='newpassword'?'Save password':'Sign in'}</button>
       {!config.emailAuthReady&&<p className="muted">Email/password registration and password-reset emails are not available yet.</p>}
-      <div className="account-links">{(config.emailAuthReady?['signin','signup','reset']:['signin']).filter(m=>m!==mode).map(m=><button type="button" className="text-button" key={m} onClick={()=>{setMode(m);setPassword('');setError('');setMessage('')}}>{m==='signin'?'Sign in':m==='signup'?'Create account':'Forgot password?'}</button>)}</div>
+      </>}<div className="account-links">{(config.emailAuthReady?['signin','signup','reset']:['signin']).filter(m=>m!==mode).map(m=><button type="button" className="text-button" key={m} onClick={()=>{setMode(m);setPassword('');setError('');setMessage('')}}>{m==='signin'?'Sign in':m==='signup'?'Create account':'Forgot password?'}</button>)}</div><p className="login-footnote">Use synthetic or de-identified data. <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p></div>
     </form>}
     {session&&mode!=='newpassword'&&<><p className="muted">Signed in as {session.user.email}</p><form className="panel upload-form" onSubmit={e=>{e.preventDefault();if(!file)return;act(async revision=>{
       if(file.size>2*1024*1024)throw new Error('Choose a CSV of 2 MiB or less.');
       const body=new FormData();body.append('file',file);const saved=await api('',{method:'POST',body});
       const [list,a]=await Promise.all([api(),api('/'+saved.id)]);if(revision!==generation.current)return;
       setFiles(list);setFilesState('ready');setAnalysis(a);setCurrency(a.metrics[0]?.currency??'USD');setFile(null);fileInput.current.value='';setMessage('Upload saved.');
-    })}}><h2>Add a payment file</h2><p>UTF-8 CSV · up to 5,000 rows · 2 MiB · 20 saved files</p><p className="muted">Do not include card numbers, names, or email addresses. AI receives a summary only when you explicitly ask and consent.</p>
+    })}}><div className="upload-intro"><div><p className="eyebrow">01 / IMPORT</p><h2>Bring your payment data.</h2><p>UTF-8 CSV · up to 5,000 rows · 2 MiB · 20 saved files</p></div><button type="button" className="button" onClick={downloadSample}>↓ Download sample CSV</button></div><p className="muted">Do not include card numbers, names, or email addresses. AI receives a summary only when you explicitly ask and consent.</p>
       <label>CSV file<input ref={fileInput} type="file" accept=".csv,text/csv" required onChange={e=>setFile(e.target.files[0]??null)}/></label>
       <button className="button primary" disabled={busy||filesState==='loading'||!file}>{busy?'Working…':'Upload and analyze'}</button>
       <details><summary>Required CSV format</summary><pre>id,timestamp,amount,currency,status,latencyMs{'\n'}pay-1,2026-01-01T12:00:00Z,19.99,USD,SUCCESS,120</pre><p>Use SUCCESS or FAILED. IDs must be unique within the file. At least 20 payments per minute are needed for failure and latency rules.</p></details>
@@ -102,7 +106,8 @@ export default function Accounts() {
       try {const f=await api();if(rev===generation.current){setFiles(f);setFilesState('ready')}}
       catch(e){if(rev===generation.current)setFilesState('error');throw e}
     })}>Refresh files</button></div>
-      {filesState==='loading'?<p role="status">Loading saved files…</p>:filesState==='error'?<p>Could not load saved files. Use Refresh files to try again.</p>:!files.length?<p>No files yet. Your first upload will appear here.</p>:<ul className="upload-list">{files.map(f=><li key={f.id}><button className="text-button" disabled={busy} onClick={()=>open(f.id)}>{f.filename}</button><span>{f.transactionCount} payments · {new Date(f.createdAt).toLocaleDateString()}</span><button className="text-button" disabled={busy} onClick={()=>setPendingDelete(f)}>Delete</button></li>)}</ul>}
+      {files.length>0&&<label className="file-search">Find a saved file<input type="search" placeholder="Search filenames…" value={fileSearch} onChange={e=>setFileSearch(e.target.value)}/></label>}
+      {filesState==='loading'?<p className="loading-state" role="status">Loading saved files…</p>:filesState==='error'?<p>Could not load saved files. Use Refresh files to try again.</p>:!files.length?<div className="file-empty"><h3>Your first investigation starts here.</h3><p>Upload a payment CSV, or download the sample above to explore an eight-minute scenario.</p></div>:!files.some(f=>f.filename.toLowerCase().includes(fileSearch.toLowerCase()))?<p role="status">No filenames match your search.</p>:<ul className="upload-list">{files.filter(f=>f.filename.toLowerCase().includes(fileSearch.toLowerCase())).map(f=><li className={analysis?.upload.id===f.id?'selected-file':''} key={f.id}><button className="text-button" disabled={busy} onClick={()=>open(f.id)}>{f.filename}</button><span>{f.transactionCount} payments · {new Date(f.createdAt).toLocaleDateString()}</span><button className="text-button" disabled={busy} onClick={()=>setPendingDelete(f)}>Delete</button></li>)}</ul>}
       {pendingDelete&&<div className="notice"><p>Permanently delete {pendingDelete.filename} and all its transactions?</p><button className="button" disabled={busy} onClick={()=>act(async rev=>{await api('/'+pendingDelete.id,{method:'DELETE'});if(rev!==generation.current)return;setFiles(files.filter(f=>f.id!==pendingDelete.id));if(analysis?.upload.id===pendingDelete.id)setAnalysis(null);setPendingDelete(null);setMessage('File deleted.');})}>Delete permanently</button> <button className="button" onClick={()=>setPendingDelete(null)}>Cancel</button></div>}
     </section>{analysis&&<section className="panel"><div className="panel-heading"><h2>{analysis.upload.filename}</h2><label>Currency <select value={currency} onChange={e=>setCurrency(e.target.value)}>{[...new Set(analysis.metrics.map(m=>m.currency))].map(c=><option key={c}>{c}</option>)}</select></label></div>
       <div className="stats">{[['Payments',totals.count],['Failure rate',totals.failureRate==null?'—':totals.failureRate.toFixed(1)+'%'],['Average latency',totals.latency==null?'—':totals.latency.toFixed(0)+' ms']].map(([k,v])=><article className="stat" key={k}><span>{k}</span><strong>{v}</strong></article>)}</div><Chart metrics={metrics} signal="latency"/>
