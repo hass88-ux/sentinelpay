@@ -16,6 +16,10 @@ Only aggregate evidence, observation timestamps/counts/latency, investigation ch
 - Questions are limited to 500 characters; request bodies to 4 KiB and model responses to 64 KiB.
 - Requests have a 25-second deadline. The server does not automatically retry provider requests.
 - Responses must match a JSON schema, fit output bounds, and cite rules that actually exist in the case. This checks structure and references, not factual correctness.
+- The server calculates weighted window summaries and a comparison with up to five earlier qualifying minutes in the preceding ten minutes. At least three baseline minutes and 20 payments in the selected minute are required for a comparison. The selected minute is excluded from its baseline.
+- The model must return one to six evidence references: observed minutes, the window summary, or the selected-minute comparison. Unknown references are rejected. The UI displays reference values supplied by the server, not values copied from model output.
+- Missing minutes and undersampled minutes are counted explicitly. Invalid counts, duplicate buckets, and non-finite or negative latency stop analysis before calling the provider.
+- Threshold relations distinguish equality from above/below, including the reversed direction of the volume-drop rule. The prompt distinguishes percentage points from percentage changes, observed co-occurrence from causation, and historical uploads from live monitoring.
 - Generated text is rendered as text. It cannot execute commands, browse, or modify payment data.
 - The endpoint checks the requesting origin and applies a best-effort limit of 3 questions per visitor per minute and 12 total per minute **per server instance**. These are not global or billing caps; independent instances can exceed them collectively. Provider quotas are the account-wide limit. An origin check alone is not authentication.
 - The site reports provider failures, timeouts, and exhausted quotas. Saved backend answers remain an explicit alternative; they are not labeled AI.
@@ -39,6 +43,6 @@ The last command makes real model calls using the encrypted local key. It evalua
 
 These are a small demonstration sample, not an accuracy benchmark or a comprehensive prompt-injection evaluation. Review the numbers, time windows, citations, and causal language. A schema-valid answer can still be misleading; the Java evidence remains visible for comparison.
 
-The release passed 21 frontend/server tests and the built-server checks. A question sent through the deployed public endpoint returned `AI_ASSISTED`, with the correct pre-spike comparison and an explicit statement that the cause was unknown. This verifies the hosted path as well as the direct provider integration.
+Run the test suite and built-server checks for the current release. The automated cases cover arithmetic, sample sufficiency, evidence boundaries, fabricated references, ownership, consent, and provider failures. Live evaluation is reviewed separately; mock-provider tests cannot establish model answer quality.
 
 In the initial live review, the model preserved root-cause uncertainty, correctly compared pre-spike latency of 200–800 ms and failure rates of 0–16%, and did not follow the request to fabricate a provider and logs. Review also caught imprecise wording around volume thresholds, so the prompt now explains that volume breaches a lower threshold and bucket timestamps mark minute starts. This does not guarantee that future wording will be correct.

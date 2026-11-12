@@ -1,3 +1,4 @@
+import AiEvidence from './AiEvidence';
 import React,{useEffect,useRef,useState} from 'react';
 
 export default function UploadAi({id,currency,getToken}) {
@@ -26,6 +27,6 @@ export default function UploadAi({id,currency,getToken}) {
       <p className="muted">Up to 120 observed minutes per currency. 3 questions/minute and 20/day per account, subject to shared capacity.</p>
       <button className="button primary" disabled={!consent||busy||!question.trim()}>{busy?'Analyzing…':'Ask AI'}</button>
     </form>{error&&<p className="notice" role="alert">{error}</p>}
-    {answer&&<div className="answer" role="status"><span className="answer-label">LIVE AI · UNVERIFIED</span><p>{answer.answer}</p><div className="citations">{answer.evidenceRules.map(r=><span key={r}>{r.replaceAll('_',' ')}</span>)}</div><ul>{answer.nextChecks.map(c=><li key={c}>{c}</li>)}</ul><small>{answer.notice}</small></div>}
+    {answer&&<div className="answer" role="status"><span className="answer-label">LIVE AI · UNVERIFIED</span><p>{answer.answer}</p><AiEvidence answer={answer}/><div className="citations">{answer.evidenceRules.map(r=><span key={r}>{r.replaceAll('_',' ')}</span>)}</div><ul>{answer.nextChecks.map(c=><li key={c}>{c}</li>)}</ul><small>{answer.notice}</small></div>}
   </section>;
 }

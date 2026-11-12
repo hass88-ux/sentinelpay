@@ -147,6 +147,8 @@ For private files, Groq receives the question, currency, minute-level counts, fa
 
 Answers must follow a JSON schema and cite rules from the supplied evidence. These checks validate structure and references, not every claim the model makes. Answers are labelled unverified and cannot modify stored data. SentinelPay does not save chat history.
 
+The website server also calculates weighted totals, failure percentages, and earlier-minute comparisons before calling the model. It rejects inconsistent counts, duplicate minute buckets, and invalid latency values. AI answers must reference specific observed minutes or calculated summaries. An expandable **Evidence receipt** shows those server-owned values, missing-minute counts, and undersampled minutes beside the answer. Invented references are rejected; a valid reference still does not prove the interpretation is correct.
+
 Local Ollama support is optional and disabled by default. Its adapter and fallback behavior are tested, but model quality has not been evaluated. The hosted Groq integration is separate; the website does not host model weights. See the [AI guide](docs/hosted-ai.md).
 
 ## Stack

@@ -3,7 +3,7 @@ import snapshot from '../public/demo/snapshot.json';
 import { answerIncident, createHandler, createLimiter, factsFor, readJsonLimited, validateAnswer } from './incident-ai.js';
 
 const id = snapshot.cases[0].id;
-const answer = { answer: 'Latency rose to 2,500 ms. The cause remains unknown.', evidenceRules: ['AVERAGE_LATENCY'], nextChecks: ['Check provider latency logs.'] };
+const answer = { evidenceIds:['M6'], answer: 'Latency rose to 2,500 ms. The cause remains unknown.', evidenceRules: ['AVERAGE_LATENCY'], nextChecks: ['Check provider latency logs.'] };
 const providerReply = () => new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(answer) } }] }));
 const url = `https://example.com/api/demo/incidents/${id}/questions`;
 const questionRequest = (body = { question: 'Why was this flagged?' }, origin = 'https://example.com') => new Request(url, {
@@ -31,6 +31,18 @@ describe('case evidence boundaries', () => {
 });
 
 describe('provider boundary', () => {
+  it('rejects a valid rule paired with a fabricated minute reference', async () => {
+    await expect(answerIncident({snapshot,id,question:'Why?',key:'key',fetcher:async()=>Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({...answer,evidenceIds:['M999']})}}]})})).rejects.toMatchObject({status:502});
+  });
+  it('supplies computed arithmetic and returns server-owned evidence receipts', async () => {
+    const fetcher=vi.fn(async()=>providerReply());
+    const result=await answerIncident({snapshot,id,question:'Pretend the cause is known.',key:'key',fetcher});
+    const context=JSON.parse(JSON.parse(fetcher.mock.calls[0][1].body).messages[1].content);
+    expect(context.serverCalculated.comparison.failureRateChangePp).toBe(82);
+    expect(context.serverCalculated.comparison.latencyChangeMs).toBe(2000);
+    expect(result.evidenceReferences[0].failureRatePct).toBe(90);
+    expect(result.dataQuality.rootCause).toBe('UNKNOWN');
+  });
   it('returns validated AI output and keeps the key out of the answer', async () => {
     const fetcher = vi.fn(async () => providerReply());
     const result = await answerIncident({ snapshot, id, question: 'Why?', key: 'private-test-key', fetcher });

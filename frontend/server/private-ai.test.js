@@ -33,7 +33,7 @@ describe('private upload AI boundary',()=>{
     const fetcher=vi.fn().mockResolvedValueOnce(Response.json({currency:'USD',filename:'secret.csv',owner:'secret-owner',
       observations:[{bucket:'2026-01-01T12:00:00Z',totalCount:25,failedCount:10,averageLatencyMs:1500,totalAmount:9999}],
       findings:[{bucket:'2026-01-01T12:00:00Z',currency:'USD',evaluations:[{rule:'FAILURE_RATE',state:'WARNING',observed:40,warningThreshold:20,criticalThreshold:50,explanation:'Failure rate.'}]}]}))
-      .mockResolvedValueOnce(Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({answer:'Failure rate was elevated.',evidenceRules:['FAILURE_RATE'],nextChecks:[]})}}]}));
+      .mockResolvedValueOnce(Response.json({choices:[{finish_reason:'stop',message:{content:JSON.stringify({answer:'Failure rate was elevated.',evidenceIds:['M1'],evidenceRules:['FAILURE_RATE'],nextChecks:[]})}}]}));
     const r=await createPrivateAiHandler({fetcher})(req(),env);expect(r.status).toBe(200);
     expect(fetcher.mock.calls[0][1].headers.Authorization).toBe('Bearer test');
     const sent=JSON.stringify(fetcher.mock.calls[1]);
