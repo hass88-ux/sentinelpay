@@ -24,6 +24,22 @@ The downloadable sample contains **180 payments**, including **23 failures**, ac
 
 Your saved files stay in your account. You can search by filename, reopen an analysis, or delete a file with confirmation. The login and workspace layouts adapt to smaller screens, and animations respect reduced-motion preferences.
 
+## The investigation workspace
+
+I wanted the dashboard to help answer “what changed?” instead of just showing a few numbers. The **Signal desk** is available in the overview and in each private upload:
+
+- Switch between latency, failure rate, and volume, then select a chart point or a minute in the timeline.
+- Inspect that minute's payment count, failures, and average latency alongside the chart.
+- Compare it with up to five qualifying observed minutes from the preceding ten minutes. The baseline needs at least three minutes with 20 payments each, and averages are weighted by payment count. Failure-rate changes are shown in percentage points.
+- Open the corresponding incident, or filter the returned transaction sample to that minute. An empty transaction sample does not mean there was no traffic.
+- Download a Markdown investigation brief with the selected evidence, comparison, suggested checks, and limitations. Export happens in the browser and does not send the report to AI.
+
+The timeline colors describe failure and latency thresholds only. Volume-drop results still come from the backend. Undersampled minutes show “Needs more data,” missing minutes stay missing, and currencies are kept separate. This comparison is descriptive; it is not an additional prediction model.
+
+Private-upload AI includes suggested questions about affected minutes, correlated failures and latency, and next checks. Selecting a question does not send it: consent and an explicit submission are still required.
+
+The interface keeps a dark green and amber palette, with a persistent desktop navigation rail, a stacked mobile layout, keyboard-operable minute selection, a skip link, and reduced-motion support.
+
 ## What runs where
 
 The project has two paths that share Java metric and detection code.

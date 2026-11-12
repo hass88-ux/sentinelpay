@@ -19,7 +19,7 @@ export default function UploadAi({id,currency,getToken}) {
     }catch(e){if(!abort.signal.aborted)setError(e.name==='TimeoutError'?'AI timed out. Please try later.':e.message)}
     finally{if(!abort.signal.aborted)setBusy(false)}
   }
-  return <section className="question-box"><h3>Ask AI about this file</h3>
+  return <section className="question-box"><p className="eyebrow">03 / INVESTIGATE WITH AI</p><h3>Turn evidence into your next question.</h3><div className="suggestions">{["Which minutes need attention, and why?","Did failures and latency rise together?","What should I investigate next?"].map(text=><button key={text} type="button" disabled={busy} onClick={()=>setQuestion(text)}>{text}</button>)}</div>
     <p className="muted">Groq receives your question and this file’s {currency} minute-level counts, failures, latencies, and rule findings. Transaction IDs, amounts, filenames, and account details are excluded. Do not include confidential information in your question.</p>
     <form onSubmit={ask}><label><input type="checkbox" checked={consent} disabled={busy} onChange={e=>setConsent(e.target.checked)}/> I agree to send this summary and my question to Groq.</label>
       <label htmlFor="upload-question">Question</label><textarea id="upload-question" rows={3} maxLength={500} value={question} onChange={e=>setQuestion(e.target.value)} required/>
