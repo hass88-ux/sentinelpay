@@ -166,6 +166,8 @@ Local Ollama support is optional and disabled by default. Its adapter and fallba
 
 ## Run locally
 
+Vercel deployment configuration is also included. See [the Vercel guide](docs/vercel.md) for server secrets, Google redirect setup, and verification. Java and PostgreSQL stay on their existing hosts.
+
 The PowerShell launchers have been tested on Windows. Install **JDK 21** and **Node.js 22.12 or newer**. The Maven wrapper downloads Maven and dependencies on first use.
 
 ### Dashboard with saved data

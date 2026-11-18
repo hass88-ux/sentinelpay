@@ -1,0 +1,8 @@
+.git
+.sites-runtime
+.env*
+backend
+node_modules
+dist
+outputs
+*.tar.gz
