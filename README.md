@@ -8,6 +8,8 @@ Most of the backend work is in Java. React makes the results easier to explore, 
 
 **[Open SentinelPay](https://sentinelpay-monitor.w61983961.chatgpt.site/)**
 
+The link above is the current live app. Vercel deployment support is in the repository, but the Vercel release is not live yet: account authorization, production configuration, and sign-in/upload checks on the new URL are still pending. The Java API stays on Render and private storage stays on Supabase. See the [Vercel setup guide](docs/vercel.md).
+
 ## Try it
 
 You can explore **Overview**, **Transactions**, and **Incidents** without an account. These views show saved synthetic results from the Java pipeline. The incident page offers live Groq explanations and saved backend answers.

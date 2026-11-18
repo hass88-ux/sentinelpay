@@ -1,6 +1,8 @@
 # Vercel deployment
 
-Vercel serves the React dashboard and Node API routes. The Java upload service remains on Render, and Supabase continues to provide Google sign-in and PostgreSQL storage. This does not move Kafka or Java into a Vercel function.
+The Vercel configuration is ready in the repository; production deployment is still pending. The local build and 65 automated tests passed. Vercel account authorization, server environment configuration, Supabase redirect setup, and live sign-in/upload verification still need to be completed.
+
+Once deployed, Vercel will serve the React dashboard and Node API routes. The Java upload service remains on Render, and Supabase continues to provide Google sign-in and PostgreSQL storage. This does not move Kafka or Java into a Vercel function.
 
 ## Build and configuration
 
